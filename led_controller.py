@@ -18,8 +18,10 @@ import logging
 from bleak import BleakScanner
 from bleak_retry_connector import establish_connection, BleakClientWithServiceCache
 
-LED_DEVICE_NAME = "LEDDMX-000101"
-LED_CHAR_UUID = "0000ffe1-0000-1000-8000-00805f9b34fb"
+import config
+
+LED_DEVICE_NAME = config.LED_DEVICE_NAME
+LED_CHAR_UUID = config.LED_CHAR_UUID
 
 logger = logging.getLogger("led")
 

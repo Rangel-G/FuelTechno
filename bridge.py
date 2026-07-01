@@ -6,21 +6,16 @@ import serial
 import time
 
 from led_controller import LedController
+import config
 
-# Configuração dinâmica de porta inteligente:
-if os.name == "posix":
-    # Se o sistema for baseado em Unix/Linux (Android/Termux/Mac), usa a rfcomm0
-    SERIAL_PORT = "/dev/rfcomm0"
-else:
-    # Se for Windows (Notebook), mantém a porta COM4
-    SERIAL_PORT = "COM4"
+SERIAL_PORT = config.SERIAL_PORT
+BAUD_RATE = config.BAUD_RATE
+WS_HOST = config.WS_HOST
+WS_PORT = config.WS_PORT
 
-BAUD_RATE = 38400  # Velocidade padrão da grande maioria dos ELM327 Bluetooth
-WS_HOST = "127.0.0.1"  # Usar 127.0.0.1 é mais seguro e rápido localmente
-WS_PORT = 8765
-
+log_level = getattr(logging, config.LOG_LEVEL, logging.INFO)
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+    level=log_level, format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
 # ==========================================
@@ -32,18 +27,18 @@ led_auto_mode = True  # True = shift light automático por RPM
 led_manual_color = (255, 0, 0)  # última cor definida manualmente pelo usuário
 
 # Faixa de RPM para o shift light (ajuste conforme o motor/gosto)
-LED_REDLINE_RPM = 3000  # a partir daqui a fita vira vermelha
+LED_REDLINE_RPM = config.LED_REDLINE_RPM  # a partir daqui a fita vira vermelha
 
 
 def rpm_to_shift_color(rpm: int):
     """
     Calcula a cor do shift light com base no RPM atual:
-    - Verde sólido até (excluindo) LED_REDLINE_RPM
-    - Vermelho sólido a partir de LED_REDLINE_RPM (hora de trocar de marcha)
+    - Cor normal (ex: Azul) até (excluindo) LED_REDLINE_RPM
+    - Cor redline (ex: Vermelho) a partir de LED_REDLINE_RPM (hora de trocar de marcha)
     """
     if rpm >= LED_REDLINE_RPM:
-        return (255, 0, 0)
-    return (0, 0, 255)
+        return config.LED_COLOR_REDLINE
+    return config.LED_COLOR_NORMAL
 
 
 class ELM327Bridge:
