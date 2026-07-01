@@ -1,0 +1,759 @@
+:root {
+    --bg-main: #121214;
+    --cor-diario: #00ff66;
+    --cor-pista: #ff3b30;
+    --cor-borda: #282830;
+    --texto-padrao: #ffffff;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Courier New', Courier, monospace;
+    user-select: none;
+}
+
+body {
+    background-color: #0c0c0e;
+    color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.workbench {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    justify-content: center;
+    max-width: 1150px;
+    width: 100%;
+}
+
+/* Painel de Controle Esquerdo (Bancada) */
+.control-panel {
+    background: linear-gradient(180deg, #18181c 0%, #111114 100%);
+    border: 2px solid #282830;
+    border-radius: 16px;
+    padding: 20px;
+    width: 300px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    z-index: 20;
+}
+
+.panel-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffcc00;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-bottom: 1px solid #282830;
+    padding-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mode-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #222227;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    border: 1px solid #33333c;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.control-label {
+    font-size: 11px;
+    color: #aaa;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+}
+
+.control-label span {
+    color: #00fffa;
+}
+
+.slider-input {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    background: #2d2d35;
+    border-radius: 3px;
+    outline: none;
+}
+
+.slider-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #ffcc00;
+    cursor: pointer;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.slider-input:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.connection-status {
+    font-size: 11px;
+    text-align: center;
+    padding: 6px;
+    border-radius: 4px;
+    background: #221111;
+    color: #ff3b30;
+    font-weight: bold;
+}
+
+.connection-status.connected {
+    background: #112211;
+    color: #34c759;
+}
+
+/* MOLDURA FÍSICA DA FT450 */
+.ecu-frame {
+    background: var(--bg-main);
+    width: 800px;
+    height: 540px;
+    border-radius: 24px;
+    padding: 25px 40px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), inset 0 2px 3px rgba(255, 255, 255, 0.2);
+    position: relative;
+    border: 4px solid #3a3a3a;
+    flex-shrink: 0;
+}
+
+.ecu-brand {
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 4px;
+    color: #d1d1d1;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+}
+
+.ecu-brand span {
+    color: #ff3b30;
+}
+
+/* TELA DA ECU */
+.ecu-screen {
+    background-color: #050505;
+    width: 100%;
+    height: 415px;
+    border-radius: 8px;
+    border: 3px solid #111;
+    padding: 10px;
+    display: grid;
+    grid-template-rows: 65px 20px 24px 1fr 40px;
+    gap: 4px;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.9);
+    position: relative;
+    overflow: hidden;
+}
+
+.screen-alert-active {
+    animation: blinkScreenRed 0.15s infinite alternate;
+}
+
+@keyframes blinkScreenRed {
+    from {
+        background-color: #050505;
+    }
+
+    to {
+        background-color: #4a0505;
+    }
+}
+
+/* CONTA-GIROS */
+.rpm-ramp-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+}
+
+.rpm-text-overlay {
+    position: absolute;
+    left: 50px;
+    top: 2px;
+    font-family: 'Arial Black', sans-serif;
+    font-weight: 900;
+    font-size: 44px;
+    color: #ffffff;
+    line-height: 1;
+    z-index: 10;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.rpm-unit-mini {
+    font-family: 'Arial', sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.rpm-scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #aaa;
+    padding: 0 10px;
+    font-weight: bold;
+    align-items: center;
+}
+
+.top-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #111;
+    padding: 0 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    border: 1px solid #222;
+}
+
+.status-left {
+    color: #00ff66;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-left::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: #00ff66;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #00ff66;
+}
+
+.status-left.searching {
+    color: #ff9500;
+}
+
+.status-left.searching::before {
+    background-color: #ff9500;
+    box-shadow: 0 0 8px #ff9500;
+}
+
+/* VIEWPORT DINÂMICO */
+.dynamic-view-viewport {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.page-content {
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+
+.page-content.active-page {
+    display: grid;
+}
+
+/* CONTAINER DOS BLOCOS DE CANAIS */
+.channel-box {
+    background: linear-gradient(180deg, #141416 0%, #0a0a0c 100%);
+    border: 1px solid #222226;
+    border-radius: 6px;
+    padding: 6px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.channel-label {
+    font-size: 9px;
+    color: #777;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.channel-value {
+    font-size: 32px;
+    font-weight: bold;
+    text-align: right;
+    color: #ffffff;
+    line-height: 1.1;
+}
+
+.channel-unit {
+    font-size: 9px;
+    color: #555;
+    text-align: right;
+}
+
+/* LAYOUTS DINÂMICOS POR GRID MAPA */
+.layout-default {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 6px;
+}
+
+.layout-default #box-speed {
+    grid-column: span 2;
+    background: linear-gradient(180deg, #151922 0%, #080b11 100%);
+    border-color: #2a3545;
+}
+
+.layout-default #box-speed .channel-value {
+    font-size: 54px;
+    color: #00fffa;
+}
+
+.layout-default #box-gear .channel-value {
+    color: #ffcc00;
+    text-align: center;
+    font-family: 'Arial Black', sans-serif;
+    font-size: 42px;
+}
+
+.layout-diario {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 6px;
+}
+
+.layout-diario #box-speed {
+    grid-column: span 2;
+    background: linear-gradient(180deg, #151922 0%, #080b11 100%);
+    border-color: #2a3545;
+}
+
+.layout-diario #box-speed .channel-value {
+    font-size: 56px;
+    color: #00fffa;
+    text-align: right;
+}
+
+.layout-diario #box-gear .channel-value {
+    color: #ffcc00;
+    text-align: center;
+    font-family: 'Arial Black', sans-serif;
+    font-size: 44px;
+}
+
+/*.layout-diario #box-map,
+.layout-diario #box-fpress,
+.layout-diario #box-tc,
+.layout-diario #box-power {
+    display: none !important;
+}*/
+
+.layout-rua {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 6px;
+}
+
+.layout-rua #box-speed {
+    grid-column: span 2;
+    background: linear-gradient(180deg, #151922 0%, #080b11 100%);
+    border-color: #2a3545;
+}
+
+.layout-rua #box-speed .channel-value {
+    font-size: 54px;
+    color: #00fffa;
+}
+
+.layout-rua #box-gear .channel-value {
+    color: #ffcc00;
+    text-align: center;
+    font-family: 'Arial Black', sans-serif;
+    font-size: 42px;
+}
+
+.layout-rua #box-map,
+.layout-rua #box-fpress {
+    display: none !important;
+}
+
+#box-tc {
+    display: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.layout-rua #box-tc {
+    display: flex;
+}
+
+.tc-active {
+    background: linear-gradient(180deg, #0f2619 0%, #050d08 100%) !important;
+    border-color: #155734 !important;
+}
+
+.tc-active .tc-status-lbl {
+    color: #34c759;
+    font-weight: bold;
+    font-size: 26px;
+    text-align: center;
+    margin-bottom: 2px;
+}
+
+.tc-disabled {
+    background: linear-gradient(180deg, #2d1212 0%, #140707 100%) !important;
+    border-color: #721c24 !important;
+}
+
+.tc-disabled .tc-status-lbl {
+    color: #ff3b30;
+    font-weight: bold;
+    font-size: 26px;
+    text-align: center;
+    margin-bottom: 2px;
+}
+
+#box-power {
+    display: none;
+}
+
+.layout-rua #box-power {
+    display: flex;
+}
+
+.layout-rua #box-power .channel-value {
+    color: #ff9500;
+}
+
+.channel-box.highlight-ect-alert {
+    border-color: #ff3b30;
+    background: linear-gradient(180deg, #260a0a 0%, #0a0a0a 100%);
+}
+
+.channel-box.highlight-ect-alert .channel-value {
+    color: #ff453a;
+}
+
+/* MAPAS */
+.maps-view {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 6px;
+}
+
+.map-select-box {
+    background: linear-gradient(180deg, #16161c 0%, #0d0d12 100%);
+    border: 1px solid #2a2a35;
+    border-radius: 6px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    position: relative;
+}
+
+.map-select-box:hover {
+    border-color: #444455;
+    background: #1b1b22;
+}
+
+.map-select-box.map-active {
+    border-color: #ff3b30;
+    background: linear-gradient(180deg, #220d0d 0%, #0a0404 100%);
+    box-shadow: 0 0 10px rgba(255, 59, 48, 0.2);
+}
+
+.map-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.map-active .map-title {
+    color: #ff453a;
+}
+
+.map-desc {
+    font-size: 9px;
+    color: #777;
+    line-height: 1.2;
+}
+
+.map-tag {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 8px;
+    background-color: #252530;
+    color: #999;
+    padding: 2px 6px;
+    border-bottom-left-radius: 4px;
+    font-weight: bold;
+}
+
+.map-active .map-tag {
+    background-color: #ff3b30;
+    color: #fff;
+}
+
+/* DATALOGGER */
+.datalogger-view {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    background: #09090b;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #1c1c22;
+}
+
+.log-row {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.log-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #888;
+}
+
+.log-bar-bg {
+    width: 100%;
+    height: 12px;
+    background: #141418;
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid #222;
+}
+
+.log-bar-fill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.1s ease;
+}
+
+/* AJUSTES */
+.settings-view {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 6px;
+}
+
+.setting-item {
+    background: #141418;
+    border: 1px solid #22222a;
+    border-radius: 6px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.setting-item:hover {
+    background: #1c1c24;
+    border-color: #333344;
+}
+
+.setting-icon {
+    width: 22px;
+    height: 22px;
+    background: #ff3b30;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+}
+
+/* NAVEGAÇÃO */
+.bottom-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+    align-items: center;
+    height: 100%;
+}
+
+.nav-btn {
+    flex: 1;
+    background: #18181b;
+    border: 1px solid #27272a;
+    color: #efefef;
+    height: 34px;
+    line-height: 32px;
+    font-size: 11px;
+    text-align: center;
+    border-radius: 6px;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.nav-btn.active {
+    background: #ff3b30;
+    border-color: #ff453a;
+    color: #ffffff;
+    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+/* LEDS LATERAIS */
+.led-indicator {
+    position: absolute;
+    top: 20px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #444;
+    transition: background-color 0.1s;
+}
+
+.led-left {
+    left: 15px;
+}
+
+.led-right {
+    right: 15px;
+}
+
+.led-active-green {
+    background-color: #34c759;
+    box-shadow: 0 0 12px #34c759;
+}
+
+.led-active-red {
+    background-color: #ff3b30;
+    box-shadow: 0 0 12px #ff3b30;
+    animation: blink 0.3s infinite;
+}
+
+@keyframes blink {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0.4;
+    }
+}
+
+.ecu-footer {
+    position: absolute;
+    bottom: 6px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 10px;
+    color: #555;
+    letter-spacing: 1px;
+}
+
+.control-panel {
+    background: linear-gradient(180deg, #18181c 0%, #111114 100%);
+    border: 2px solid #282830;
+    /* ... outras propriedades ... */
+    z-index: 20;
+    display: none;
+    /* ← Isso esconde a bancada, mas mantém o código invisível pro JS funcionar! */
+}
+
+/* 1. Mantenha a sua classe base intacta (ela é quem dá a estrutura) */
+.page-content {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    /* Divide o painel em 3 colunas iguais */
+    gap: 15px;
+    padding: 20px;
+}
+
+.channel-box-grande {
+    grid-column: span 2;
+    /* Faz o box ocupar as 2 colunas */
+}
+
+/* Classes de tamanho para os seus box-content */
+.box-pequena {
+    grid-column: span 1 !important;
+    /* Ocupa 1 parte do grid (aprox 1/3) */
+}
+
+.box-media {
+    grid-column: span 2;
+    /* Ocupa 2 partes do grid (aprox 2/3) */
+}
+
+.box-grande {
+    grid-column: span 3;
+    /* Ocupa a largura total (3/3) */
+}
+
+/* 2. As classes de mapa devem ser apenas "skins" (apenas cores) */
+/* ==========================================
+   NOVOS LAYOUTS: PISTA E DRIFT
+========================================== */
+/* Força os grids corretos */
+.page-content {
+    width: 100%;
+    height: 100%;
+    display: none;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 10px;
+}
+
+.page-content.active-page {
+    display: grid;
+}
+
+.layout-diario,
+.layout-rua,
+.layout-drift,
+.layout-pista {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.box-pequena {
+    grid-column: span 1;
+}
+
+.box-media {
+    grid-column: span 2;
+}
+
+.box-grande {
+    grid-column: span 3;
+}
+
+.box-pressure {}
