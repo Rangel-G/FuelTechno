@@ -1,29 +1,127 @@
-<div id="page-ajustes" class="page-content settings-view active-page">
-    <div class="setting-item">
-        <div class="setting-icon">⚙</div>Configuração Geral
-    </div>
-    <div class="setting-item">
-        <div class="setting-icon">⚡</div>Mapa de Ignição
-    </div>
-    <div class="setting-item">
-        <div class="setting-icon">🚗</div>Calibrar Sensores
-    </div>
-    <div class="setting-item">
-        <div class="setting-icon">⚠</div>Limites e Alertas
+<div id="page-ajustes" class="page-content settings-view-new active-page">
+
+    <!-- Itens estáticos existentes (grid 2x2 no topo) -->
+    <div class="settings-static-grid">
+        <div class="setting-item">
+            <div class="setting-icon">⚙</div>Configuração Geral
+        </div>
+        <div class="setting-item">
+            <div class="setting-icon">⚡</div>Mapa de Ignição
+        </div>
+        <div class="setting-item">
+            <div class="setting-icon">🚗</div>Calibrar Sensores
+        </div>
+        <div class="setting-item">
+            <div class="setting-icon">⚠</div>Limites e Alertas
+        </div>
     </div>
 
-    <div class="setting-item led-panel">
-        <div class="led-panel-row">
-            <div class="setting-icon led-icon">💡</div>
-            <span>Fita de LED</span>
-            <label class="mode-toggle led-auto-toggle">
-                <input type="checkbox" id="chk-led-auto" checked> Shift Light Auto
-            </label>
+    <!-- Painel Expansível: Conexão OBD-II -->
+    <div class="config-panel" id="panel-obd">
+        <div class="config-panel-header" onclick="toggleConfigPanel('panel-obd')">
+            <div class="config-panel-title">
+                <div class="setting-icon icon-obd">🔌</div>
+                <span>Configurar Conexão</span>
+            </div>
+            <div class="config-panel-meta">
+                <span class="config-status" id="obd-status-badge">COM4</span>
+                <span class="config-arrow">▼</span>
+            </div>
         </div>
-        <div class="led-panel-row">
-            <input type="color" id="led-color-picker" value="#ff0000">
-            <button id="btn-led-on" class="led-btn">Ligar</button>
-            <button id="btn-led-off" class="led-btn led-btn-off">Desligar</button>
+        <div class="config-panel-body" id="panel-obd-body">
+            <div class="config-field">
+                <label>Tipo de Conexão</label>
+                <select id="cfg-obd-type" class="config-select">
+                    <option value="serial-com">Porta COM (Windows)</option>
+                    <option value="serial-rfcomm">Bluetooth Pareado (Linux)</option>
+                    <option value="serial-usb">USB Serial (ttyUSB/ttyACM)</option>
+                    <option value="wifi">WiFi / TCP (Adaptador WiFi OBD)</option>
+                </select>
+            </div>
+            <div class="config-field">
+                <label id="cfg-obd-addr-label">Porta Serial</label>
+                <input type="text" id="cfg-obd-addr" class="config-input" placeholder="COM4">
+            </div>
+            <div class="config-field">
+                <label>Baud Rate</label>
+                <select id="cfg-obd-baud" class="config-select">
+                    <option value="9600">9600</option>
+                    <option value="38400" selected>38400</option>
+                    <option value="115200">115200</option>
+                    <option value="500000">500000</option>
+                </select>
+            </div>
+            <div class="config-field">
+                <label>Protocolo OBD</label>
+                <select id="cfg-obd-proto" class="config-select">
+                    <option value="auto">Auto Detectar (ATSP0)</option>
+                    <option value="iso9141">ISO 9141-2</option>
+                    <option value="iso14230">ISO 14230-4 (KWP)</option>
+                    <option value="can11-500">CAN 11-bit / 500 Kbps</option>
+                    <option value="can29-500">CAN 29-bit / 500 Kbps</option>
+                    <option value="can11-250">CAN 11-bit / 250 Kbps</option>
+                    <option value="can29-250">CAN 29-bit / 250 Kbps</option>
+                </select>
+            </div>
+            <button class="config-save-btn" id="btn-save-obd">
+                <span class="save-icon">✓</span> Salvar Conexão
+            </button>
+        </div>
+    </div>
+
+    <!-- Painel Expansível: Dispositivo LED -->
+    <div class="config-panel" id="panel-led">
+        <div class="config-panel-header" onclick="toggleConfigPanel('panel-led')">
+            <div class="config-panel-title">
+                <div class="setting-icon icon-led">💡</div>
+                <span>Configurar Dispositivo LED</span>
+            </div>
+            <div class="config-panel-meta">
+                <span class="config-status" id="led-status-badge">LEDDMX</span>
+                <span class="config-arrow">▼</span>
+            </div>
+        </div>
+        <div class="config-panel-body" id="panel-led-body">
+            <div class="config-field">
+                <label>Nome do Dispositivo BLE</label>
+                <input type="text" id="cfg-led-name" class="config-input" placeholder="LEDDMX-000101">
+            </div>
+            <div class="config-field">
+                <label>UUID da Característica</label>
+                <input type="text" id="cfg-led-uuid" class="config-input" placeholder="0000ffe1-0000-1000-8000-00805f9b34fb">
+            </div>
+            <div class="config-field">
+                <label>RPM do Shift Light</label>
+                <input type="number" id="cfg-led-redline" class="config-input" placeholder="3000" min="1000" max="9000" step="100">
+            </div>
+            <div class="config-field-row">
+                <div class="config-field config-field-half">
+                    <label>Cor Normal</label>
+                    <div class="color-picker-wrapper">
+                        <input type="color" id="cfg-led-color-normal" value="#0000ff">
+                        <span class="color-label" id="lbl-color-normal">Azul</span>
+                    </div>
+                </div>
+                <div class="config-field config-field-half">
+                    <label>Cor Redline</label>
+                    <div class="color-picker-wrapper">
+                        <input type="color" id="cfg-led-color-redline" value="#ff0000">
+                        <span class="color-label" id="lbl-color-redline">Vermelho</span>
+                    </div>
+                </div>
+            </div>
+            <div class="config-field-row led-power-row">
+                <label class="mode-toggle led-auto-toggle">
+                    <input type="checkbox" id="chk-led-auto" checked> Shift Light Auto
+                </label>
+                <div class="led-btns-inline">
+                    <button id="btn-led-on" class="led-btn">Ligar</button>
+                    <button id="btn-led-off" class="led-btn led-btn-off">Desligar</button>
+                </div>
+            </div>
+            <button class="config-save-btn" id="btn-save-led">
+                <span class="save-icon">✓</span> Salvar LED
+            </button>
         </div>
     </div>
 </div>

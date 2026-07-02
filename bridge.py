@@ -198,6 +198,8 @@ async def led_command_listener(websocket):
       {"cmd": "led_auto",  "auto": true|false}
       {"cmd": "led_color", "r": 0-255, "g": 0-255, "b": 0-255}
       {"cmd": "led_power", "on": true|false}
+      {"cmd": "update_config", "section": "obd"|"led", ...}
+      {"cmd": "get_config"}
     """
     global led_auto_mode, led_manual_color
 
@@ -229,6 +231,76 @@ async def led_command_listener(websocket):
             else:
                 await led.power_off()
                 logging.info("[LED] Desligada manualmente")
+
+        elif cmd == "get_config":
+            # Envia a configuração atual para o frontend
+            current_config = {
+                "cmd": "current_config",
+                "obd": {
+                    "connection_type": config.OBD_CONNECTION_TYPE,
+                    "serial_port": config.SERIAL_PORT,
+                    "baud_rate": config.BAUD_RATE,
+                    "protocol": config.OBD_PROTOCOL,
+                },
+                "led": {
+                    "device_name": config.LED_DEVICE_NAME,
+                    "char_uuid": config.LED_CHAR_UUID,
+                    "redline_rpm": config.LED_REDLINE_RPM,
+                    "color_normal": list(config.LED_COLOR_NORMAL),
+                    "color_redline": list(config.LED_COLOR_REDLINE),
+                },
+            }
+            await websocket.send(json.dumps(current_config))
+
+        elif cmd == "update_config":
+            section = data.get("section")
+            env_updates = {}
+
+            if section == "obd":
+                conn_type = data.get("connection_type", config.OBD_CONNECTION_TYPE)
+                serial_port = data.get("serial_port", config.SERIAL_PORT)
+                baud_rate = str(data.get("baud_rate", config.BAUD_RATE))
+                protocol = data.get("protocol", config.OBD_PROTOCOL)
+
+                config.OBD_CONNECTION_TYPE = conn_type
+                config.SERIAL_PORT = serial_port
+                config.BAUD_RATE = int(baud_rate)
+                config.OBD_PROTOCOL = protocol
+
+                env_updates = {
+                    "OBD_CONNECTION_TYPE": conn_type,
+                    "SERIAL_PORT": serial_port,
+                    "BAUD_RATE": baud_rate,
+                    "OBD_PROTOCOL": protocol,
+                }
+                logging.info(f"[CONFIG] OBD atualizado: tipo={conn_type}, porta={serial_port}, baud={baud_rate}, proto={protocol}")
+
+            elif section == "led":
+                device_name = data.get("device_name", config.LED_DEVICE_NAME)
+                char_uuid = data.get("char_uuid", config.LED_CHAR_UUID)
+                redline_rpm = str(data.get("redline_rpm", config.LED_REDLINE_RPM))
+                color_normal = data.get("color_normal", list(config.LED_COLOR_NORMAL))
+                color_redline = data.get("color_redline", list(config.LED_COLOR_REDLINE))
+
+                config.LED_DEVICE_NAME = device_name
+                config.LED_CHAR_UUID = char_uuid
+                config.LED_REDLINE_RPM = int(redline_rpm)
+                config.LED_COLOR_NORMAL = tuple(color_normal)
+                config.LED_COLOR_REDLINE = tuple(color_redline)
+
+                env_updates = {
+                    "LED_DEVICE_NAME": device_name,
+                    "LED_CHAR_UUID": char_uuid,
+                    "LED_REDLINE_RPM": redline_rpm,
+                    "LED_COLOR_NORMAL": ",".join(str(c) for c in color_normal),
+                    "LED_COLOR_REDLINE": ",".join(str(c) for c in color_redline),
+                }
+                logging.info(f"[CONFIG] LED atualizado: nome={device_name}, redline={redline_rpm}")
+
+            if env_updates:
+                config.save_to_env(env_updates)
+                # Confirma pro frontend que a configuração foi salva
+                await websocket.send(json.dumps({"cmd": "config_saved", "section": section, "ok": True}))
 
 
 async def telemetry_sender(websocket, bridge, bridge_ready_holder):

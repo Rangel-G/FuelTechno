@@ -1,4 +1,7 @@
 import os
+import logging
+
+config_logger = logging.getLogger("config")
 
 # Helper to load .env file manually (so we don't depend on python-dotenv)
 def load_dotenv():
@@ -17,8 +20,48 @@ def load_dotenv():
                     if key not in os.environ:
                         os.environ[key] = val
 
+
+def save_to_env(updates: dict):
+    """
+    Persists key=value pairs to the .env file.
+    If a key already exists, its value is updated in-place.
+    If a key does not exist, it is appended at the end.
+    """
+    env_path = os.path.join(os.path.dirname(__file__), ".env")
+
+    lines = []
+    if os.path.exists(env_path):
+        with open(env_path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+
+    remaining = dict(updates)  # keys still to write
+
+    new_lines = []
+    for line in lines:
+        stripped = line.strip()
+        if stripped and not stripped.startswith("#") and "=" in stripped:
+            key = stripped.split("=", 1)[0].strip()
+            if key in remaining:
+                new_lines.append(f"{key}={remaining.pop(key)}\n")
+                continue
+        new_lines.append(line if line.endswith("\n") else line + "\n")
+
+    # Append any keys that weren't found in the existing file
+    for key, val in remaining.items():
+        new_lines.append(f"{key}={val}\n")
+
+    with open(env_path, "w", encoding="utf-8") as f:
+        f.writelines(new_lines)
+
+    config_logger.info("Configuração salva em .env: %s", list(updates.keys()))
+
+
 # Load environment variables from .env
 load_dotenv()
+
+# --- OBD-II Connection Configurations ---
+OBD_CONNECTION_TYPE = os.getenv("OBD_CONNECTION_TYPE", "serial-com")
+OBD_PROTOCOL = os.getenv("OBD_PROTOCOL", "auto")
 
 # --- LED Configurations ---
 LED_DEVICE_NAME = os.getenv("LED_DEVICE_NAME", "LEDDMX-000101")

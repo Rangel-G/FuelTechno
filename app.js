@@ -113,14 +113,176 @@ function inicializarElementosDinamicos(pagina) {
         });
     }
 
-    // 3. Lógica da tela de Ajustes (controles da fita LED)
+    // 3. Lógica da tela de Ajustes (controles de configuração)
     if (pagina === 'ajustes') {
+        inicializarConfigOBD();
+        inicializarConfigLED();
         inicializarControlesLed();
     }
 }
 
 // ==========================================
-// CONTROLE DA FITA DE LED
+// TOGGLE DOS PAINÉIS EXPANSÍVEIS
+// ==========================================
+
+function toggleConfigPanel(panelId) {
+    const panel = document.getElementById(panelId);
+    if (!panel) return;
+    panel.classList.toggle('panel-open');
+}
+
+// ==========================================
+// CONFIGURAÇÃO OBD-II
+// ==========================================
+
+// Mapa de placeholders por tipo de conexão
+const OBD_TYPE_HINTS = {
+    'serial-com':    { label: 'Porta Serial',       placeholder: 'COM4',                  baudVisible: true },
+    'serial-rfcomm': { label: 'Dispositivo Bluetooth', placeholder: '/dev/rfcomm0',        baudVisible: true },
+    'serial-usb':    { label: 'Dispositivo USB',     placeholder: '/dev/ttyUSB0',          baudVisible: true },
+    'wifi':          { label: 'Endereço IP:Porta',   placeholder: '192.168.0.10:35000',    baudVisible: false },
+};
+
+function inicializarConfigOBD() {
+    const typeSelect = document.getElementById('cfg-obd-type');
+    const addrInput = document.getElementById('cfg-obd-addr');
+    const addrLabel = document.getElementById('cfg-obd-addr-label');
+    const baudSelect = document.getElementById('cfg-obd-baud');
+    const protoSelect = document.getElementById('cfg-obd-proto');
+    const btnSave = document.getElementById('btn-save-obd');
+    const badge = document.getElementById('obd-status-badge');
+
+    if (!typeSelect || !addrInput || !btnSave) return;
+
+    // Carrega configuração salva (localStorage como fallback imediato)
+    const saved = JSON.parse(localStorage.getItem('ft_config_obd') || '{}');
+
+    if (saved.connection_type) typeSelect.value = saved.connection_type;
+    if (saved.serial_port) addrInput.value = saved.serial_port;
+    if (saved.baud_rate && baudSelect) baudSelect.value = String(saved.baud_rate);
+    if (saved.protocol && protoSelect) protoSelect.value = saved.protocol;
+
+    // Atualiza badge com o endereço salvo
+    if (badge && saved.serial_port) badge.innerText = saved.serial_port;
+
+    // Atualiza placeholder quando muda o tipo
+    function updatePlaceholder() {
+        const hints = OBD_TYPE_HINTS[typeSelect.value] || OBD_TYPE_HINTS['serial-com'];
+        addrInput.placeholder = hints.placeholder;
+        if (addrLabel) addrLabel.innerText = hints.label;
+        // Esconde baud rate para WiFi
+        const baudField = baudSelect?.closest('.config-field');
+        if (baudField) baudField.style.display = hints.baudVisible ? '' : 'none';
+    }
+    typeSelect.onchange = updatePlaceholder;
+    updatePlaceholder();
+
+    // Salvar
+    btnSave.onclick = () => {
+        const config = {
+            connection_type: typeSelect.value,
+            serial_port: addrInput.value || addrInput.placeholder,
+            baud_rate: baudSelect ? parseInt(baudSelect.value) : 38400,
+            protocol: protoSelect ? protoSelect.value : 'auto',
+        };
+        localStorage.setItem('ft_config_obd', JSON.stringify(config));
+
+        // Atualiza badge
+        if (badge) badge.innerText = config.serial_port;
+
+        // Envia pro backend via WebSocket
+        sendLedCommand({ cmd: 'update_config', section: 'obd', ...config });
+
+        // Feedback visual
+        btnSave.classList.add('saved');
+        btnSave.innerHTML = '<span class="save-icon">✓</span> Salvo!';
+        setTimeout(() => {
+            btnSave.classList.remove('saved');
+            btnSave.innerHTML = '<span class="save-icon">✓</span> Salvar Conexão';
+        }, 2000);
+    };
+}
+
+// ==========================================
+// CONFIGURAÇÃO DO DISPOSITIVO LED
+// ==========================================
+
+function rgbToHex(r, g, b) {
+    return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+}
+
+function inicializarConfigLED() {
+    const nameInput = document.getElementById('cfg-led-name');
+    const uuidInput = document.getElementById('cfg-led-uuid');
+    const redlineInput = document.getElementById('cfg-led-redline');
+    const colorNormal = document.getElementById('cfg-led-color-normal');
+    const colorRedline = document.getElementById('cfg-led-color-redline');
+    const lblNormal = document.getElementById('lbl-color-normal');
+    const lblRedline = document.getElementById('lbl-color-redline');
+    const btnSave = document.getElementById('btn-save-led');
+    const badge = document.getElementById('led-status-badge');
+
+    if (!nameInput || !btnSave) return;
+
+    // Carrega configuração salva
+    const saved = JSON.parse(localStorage.getItem('ft_config_led') || '{}');
+
+    if (saved.device_name) nameInput.value = saved.device_name;
+    if (saved.char_uuid) uuidInput.value = saved.char_uuid;
+    if (saved.redline_rpm) redlineInput.value = saved.redline_rpm;
+    if (saved.color_normal && colorNormal) {
+        colorNormal.value = rgbToHex(...saved.color_normal);
+    }
+    if (saved.color_redline && colorRedline) {
+        colorRedline.value = rgbToHex(...saved.color_redline);
+    }
+
+    // Atualiza badge
+    if (badge && saved.device_name) {
+        badge.innerText = saved.device_name.substring(0, 10);
+    }
+
+    // Atualiza label de cor conforme seleção
+    function updateColorLabels() {
+        if (lblNormal && colorNormal) lblNormal.innerText = colorNormal.value;
+        if (lblRedline && colorRedline) lblRedline.innerText = colorRedline.value;
+    }
+    if (colorNormal) colorNormal.oninput = updateColorLabels;
+    if (colorRedline) colorRedline.oninput = updateColorLabels;
+    updateColorLabels();
+
+    // Salvar
+    btnSave.onclick = () => {
+        const normalRgb = hexToRgb(colorNormal?.value || '#0000ff');
+        const redlineRgb = hexToRgb(colorRedline?.value || '#ff0000');
+
+        const config = {
+            device_name: nameInput.value || nameInput.placeholder,
+            char_uuid: uuidInput?.value || uuidInput?.placeholder || '0000ffe1-0000-1000-8000-00805f9b34fb',
+            redline_rpm: parseInt(redlineInput?.value || '3000'),
+            color_normal: [normalRgb.r, normalRgb.g, normalRgb.b],
+            color_redline: [redlineRgb.r, redlineRgb.g, redlineRgb.b],
+        };
+        localStorage.setItem('ft_config_led', JSON.stringify(config));
+
+        // Atualiza badge
+        if (badge) badge.innerText = config.device_name.substring(0, 10);
+
+        // Envia pro backend
+        sendLedCommand({ cmd: 'update_config', section: 'led', ...config });
+
+        // Feedback visual
+        btnSave.classList.add('saved');
+        btnSave.innerHTML = '<span class="save-icon">✓</span> Salvo!';
+        setTimeout(() => {
+            btnSave.classList.remove('saved');
+            btnSave.innerHTML = '<span class="save-icon">✓</span> Salvar LED';
+        }, 2000);
+    };
+}
+
+// ==========================================
+// CONTROLE DA FITA DE LED (Power/Color inline)
 // ==========================================
 
 function sendLedCommand(payload) {
@@ -140,27 +302,17 @@ function hexToRgb(hex) {
 
 function inicializarControlesLed() {
     const chkAuto = document.getElementById('chk-led-auto');
-    const colorPicker = document.getElementById('led-color-picker');
     const btnOn = document.getElementById('btn-led-on');
     const btnOff = document.getElementById('btn-led-off');
 
-    if (!chkAuto || !colorPicker || !btnOn || !btnOff) return;
+    if (!chkAuto || !btnOn || !btnOff) return;
 
     // Restaura o estado lembrado localmente (não persiste após F5, só entre trocas de aba)
     chkAuto.checked = ledAutoMode;
-    colorPicker.value = ledManualColorHex;
 
     chkAuto.onchange = () => {
         ledAutoMode = chkAuto.checked;
         sendLedCommand({ cmd: 'led_auto', auto: ledAutoMode });
-    };
-
-    colorPicker.oninput = () => {
-        ledManualColorHex = colorPicker.value;
-        ledAutoMode = false;
-        chkAuto.checked = false;
-        const { r, g, b } = hexToRgb(ledManualColorHex);
-        sendLedCommand({ cmd: 'led_color', r, g, b });
     };
 
     btnOn.onclick = () => sendLedCommand({ cmd: 'led_power', on: true });
