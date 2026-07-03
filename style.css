@@ -41,7 +41,8 @@ body {
     padding: 20px;
     width: 300px;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
-    display: flex;
+    display: none;
+    /* ← Bancada manual escondida na UI (o JS continua funcionando por trás). */
     flex-direction: column;
     gap: 14px;
     z-index: 20;
@@ -276,6 +277,9 @@ body {
     width: 100%;
     height: 100%;
     display: none;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 10px;
 }
 
 .page-content.active-page {
@@ -680,30 +684,12 @@ body {
     letter-spacing: 1px;
 }
 
-.control-panel {
-    background: linear-gradient(180deg, #18181c 0%, #111114 100%);
-    border: 2px solid #282830;
-    /* ... outras propriedades ... */
-    z-index: 20;
-    display: none;
-    /* ← Isso esconde a bancada, mas mantém o código invisível pro JS funcionar! */
-}
-
-/* 1. Mantenha a sua classe base intacta (ela é quem dá a estrutura) */
-.page-content {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    /* Divide o painel em 3 colunas iguais */
-    gap: 15px;
-    padding: 20px;
-}
-
+/* Box que ocupa 2 colunas dentro de .page-content (usado em telas legadas) */
 .channel-box-grande {
     grid-column: span 2;
-    /* Faz o box ocupar as 2 colunas */
 }
 
-/* Classes de tamanho para os seus box-content */
+/* Classes de tamanho para os box-content (valor final, após remover duplicatas) */
 .box-pequena {
     grid-column: span 1 !important;
     /* Ocupa 1 parte do grid (aprox 1/3) */
@@ -719,44 +705,17 @@ body {
     /* Ocupa a largura total (3/3) */
 }
 
-/* 2. As classes de mapa devem ser apenas "skins" (apenas cores) */
+.box-pressure {}
+
 /* ==========================================
-   NOVOS LAYOUTS: PISTA E DRIFT
+   LAYOUTS: PISTA E DRIFT
 ========================================== */
-/* Força os grids corretos */
-.page-content {
-    width: 100%;
-    height: 100%;
-    display: none;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    padding: 10px;
-}
-
-.page-content.active-page {
-    display: grid;
-}
-
 .layout-diario,
 .layout-rua,
 .layout-drift,
 .layout-pista {
     grid-template-columns: repeat(4, 1fr);
 }
-
-.box-pequena {
-    grid-column: span 1;
-}
-
-.box-media {
-    grid-column: span 2;
-}
-
-.box-grande {
-    grid-column: span 3;
-}
-
-.box-pressure {}
 
 /* ==========================================
    AJUSTES V2 — PAINÉIS DE CONFIGURAÇÃO
@@ -777,10 +736,12 @@ body {
 .settings-view-new::-webkit-scrollbar {
     width: 4px;
 }
+
 .settings-view-new::-webkit-scrollbar-thumb {
     background: #333;
     border-radius: 2px;
 }
+
 .settings-view-new::-webkit-scrollbar-track {
     background: #0a0a0c;
 }
@@ -1054,4 +1015,66 @@ body {
 
 .icon-led {
     background: #ff9500 !important;
+}
+
+/* ==========================================
+   ADICIONADO DE: style_addon.css
+   Badge de status "desconectado" para o
+   controle manual de conexão OBD-II
+========================================== */
+.config-status-off {
+    background: #2e1a1a;
+    color: #ff3b30;
+}
+
+/* ==========================================
+   ADICIONADO DE: style_fix_ajustes.css
+   CORREÇÃO: layout da tela de Ajustes
+
+   Problema: existem 3 definições de .page-content
+   acima, brigando entre si — o que fazia a tela de
+   Ajustes renderizar como grid de 3 colunas
+   (Menu | OBD | LED lado a lado) em vez de coluna
+   única com rolagem, cortando os campos de baixo,
+   incluindo os seletores de cor do LED.
+
+   Esta regra usa #page-ajustes (ID + classe) para
+   garantir que SEMPRE vença qualquer outra regra de
+   .page-content, não importa a ordem no arquivo.
+========================================== */
+#page-ajustes.page-content {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 6px !important;
+    gap: 6px !important;
+    scrollbar-width: thin;
+    scrollbar-color: #333 #0a0a0c;
+}
+
+#page-ajustes.page-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+#page-ajustes.page-content::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 2px;
+}
+
+#page-ajustes.page-content::-webkit-scrollbar-track {
+    background: #0a0a0c;
+}
+
+/* Cada painel (OBD / LED) ocupa a largura toda, empilhados */
+#page-ajustes .config-panel {
+    flex-shrink: 0;
+    width: 100%;
+}
+
+#page-ajustes .settings-static-grid {
+    flex-shrink: 0;
 }

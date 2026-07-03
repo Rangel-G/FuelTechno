@@ -51,12 +51,7 @@ visível porque você rodou via `python`).
 Rode este comando na raiz do projeto (Windows, PowerShell ou CMD):
 
 ```bash
-pyinstaller --onefile --windowed --name FuelTechno \
-  --add-data "index.html;." \
-  --add-data "style.css;." \
-  --add-data "app.js;." \
-  --add-data "pages;pages" \
-  main.py
+python -m PyInstaller --onefile --windowed --name FuelTechno --add-data "index.html;." --add-data "style.css;." --add-data "app.js;." --add-data "pages;pages" main.py
 ```
 
 > Observação: no Windows o separador do `--add-data` é `;`. Se um dia
