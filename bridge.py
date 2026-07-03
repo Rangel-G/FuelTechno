@@ -61,6 +61,17 @@ class ELM327Bridge:
             self.is_connected = False
             return False
 
+    def disconnect(self):
+        """Encerra a conexão serial manualmente (acionado pelo botão 'Desligar Conexão')."""
+        try:
+            if self.ser and self.ser.is_open:
+                self.ser.close()
+                logging.info("Conexão OBD-II encerrada manualmente pelo usuário.")
+        except Exception as e:
+            logging.warning(f"Erro ao fechar a porta serial: {e}")
+        finally:
+            self.is_connected = False
+
     def _send_cmd(self, cmd: str) -> str:
         if not self.ser or not self.is_connected:
             return ""
@@ -189,15 +200,18 @@ class ELM327Bridge:
         return payload
 
 
-async def led_command_listener(websocket):
+async def command_listener(websocket, bridge, bridge_ready_holder):
     """
-    Escuta comandos vindos do frontend para controlar a fita LED
-    manualmente. Roda em paralelo ao envio de telemetria.
+    Escuta comandos vindos do frontend: controle da fita LED, controle
+    manual da conexão OBD-II (botão "Ligar/Desligar Conexão") e leitura/
+    gravação de configurações.
 
     Mensagens esperadas (JSON):
       {"cmd": "led_auto",  "auto": true|false}
       {"cmd": "led_color", "r": 0-255, "g": 0-255, "b": 0-255}
       {"cmd": "led_power", "on": true|false}
+      {"cmd": "connect_obd"}
+      {"cmd": "disconnect_obd"}
       {"cmd": "update_config", "section": "obd"|"led", ...}
       {"cmd": "get_config"}
     """
@@ -231,6 +245,25 @@ async def led_command_listener(websocket):
             else:
                 await led.power_off()
                 logging.info("[LED] Desligada manualmente")
+
+        elif cmd == "connect_obd":
+            # Acionado pelo botão "Ligar Conexão" na tela de Ajustes.
+            # Faz o mesmo que antes acontecia automaticamente ao abrir o bridge:
+            # abre a porta serial e inicializa o ELM327 — só que agora sob demanda.
+            if bridge.is_connected:
+                ok = True
+                logging.info("[OBD] Conexão já estava ativa.")
+            else:
+                logging.info("[OBD] Conectando por comando manual da interface...")
+                ok = await asyncio.to_thread(bridge.connect)
+            bridge_ready_holder["ready"] = ok
+            await websocket.send(json.dumps({"cmd": "obd_connection_result", "connected": ok}))
+
+        elif cmd == "disconnect_obd":
+            await asyncio.to_thread(bridge.disconnect)
+            bridge_ready_holder["ready"] = False
+            logging.info("[OBD] Conexão encerrada por comando manual da interface.")
+            await websocket.send(json.dumps({"cmd": "obd_connection_result", "connected": False}))
 
         elif cmd == "get_config":
             # Envia a configuração atual para o frontend
@@ -266,6 +299,12 @@ async def led_command_listener(websocket):
                 config.SERIAL_PORT = serial_port
                 config.BAUD_RATE = int(baud_rate)
                 config.OBD_PROTOCOL = protocol
+
+                # Mantém o objeto bridge em sincronia com a nova porta/baud,
+                # para que o próximo clique em "Ligar Conexão" já use os
+                # valores atualizados.
+                bridge.port = serial_port
+                bridge.baudrate = int(baud_rate)
 
                 env_updates = {
                     "OBD_CONNECTION_TYPE": conn_type,
@@ -305,19 +344,17 @@ async def led_command_listener(websocket):
 
 async def telemetry_sender(websocket, bridge, bridge_ready_holder):
     """
-    Loop principal: lê o OBD2 (ou fallback) e envia pro frontend.
+    Loop principal: lê o OBD2 (quando conectado) e envia pro frontend.
+    A conexão com a porta serial agora é 100% manual (botão "Ligar Conexão"
+    na tela de Ajustes) — este loop não tenta mais reconectar sozinho.
     Também aplica a cor do shift light na fita, quando em modo automático.
     """
     while True:
         if bridge_ready_holder["ready"] and bridge.is_connected:
             telemetry = await asyncio.to_thread(bridge.query_telemetry)
+            telemetry["obd_connected"] = True
+            telemetry["error"] = False
         else:
-            if bridge_ready_holder["ready"]:
-                logging.warning(
-                    "Conexão perdida com o ELM327. Tentando reestabelecer..."
-                )
-                bridge_ready_holder["ready"] = bridge.connect()
-
             telemetry = {
                 "rpm": 0,
                 "speed": 0,
@@ -330,8 +367,9 @@ async def telemetry_sender(websocket, bridge, bridge_ready_holder):
                 "mil_on": False,
                 "dtc_count": 0,
                 "error": True,
+                "obd_connected": False,
             }
-            await asyncio.sleep(1.0)
+            await asyncio.sleep(0.5)
 
         # --- Shift light automático baseado no RPM ---
         if led_auto_mode:
@@ -346,21 +384,23 @@ async def websocket_handler(websocket):
     import websockets
 
     logging.info(f"Frontend conectado via WebSocket: {websocket.remote_address}")
-    bridge = ELM327Bridge(SERIAL_PORT, BAUD_RATE)
-    bridge_ready_holder = {"ready": bridge.connect()}
+    bridge_instance = ELM327Bridge(SERIAL_PORT, BAUD_RATE)
+    # A conexão OBD-II não é mais aberta automaticamente aqui.
+    # Ela só começa quando o usuário aperta "Ligar Conexão" na interface.
+    bridge_ready_holder = {"ready": False}
 
     try:
-        # Roda o envio de telemetria e a escuta de comandos LED em paralelo.
+        # Roda o envio de telemetria e a escuta de comandos em paralelo.
         # Se qualquer um encerrar (ex: cliente desconectou), o outro é cancelado.
         await asyncio.gather(
-            telemetry_sender(websocket, bridge, bridge_ready_holder),
-            led_command_listener(websocket),
+            telemetry_sender(websocket, bridge_instance, bridge_ready_holder),
+            command_listener(websocket, bridge_instance, bridge_ready_holder),
         )
     except websockets.exceptions.ConnectionClosed:
         logging.info("Frontend desconectou.")
     finally:
-        if bridge.ser and bridge.ser.is_open:
-            bridge.ser.close()
+        if bridge_instance.ser and bridge_instance.ser.is_open:
+            bridge_instance.ser.close()
 
 
 async def main():

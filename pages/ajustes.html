@@ -29,6 +29,16 @@
             </div>
         </div>
         <div class="config-panel-body" id="panel-obd-body">
+
+            <!-- Controle manual de Ligar/Desligar a conexão OBD-II -->
+            <div class="config-field-row led-power-row">
+                <span class="config-status config-status-off" id="obd-conn-badge">DESCONECTADO</span>
+                <div class="led-btns-inline">
+                    <button id="btn-obd-connect" class="led-btn">Ligar Conexão</button>
+                    <button id="btn-obd-disconnect" class="led-btn led-btn-off">Desligar Conexão</button>
+                </div>
+            </div>
+
             <div class="config-field">
                 <label>Tipo de Conexão</label>
                 <select id="cfg-obd-type" class="config-select">

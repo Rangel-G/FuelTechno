@@ -1,0 +1,51 @@
+
+/* ==========================================
+   CORREÇÃO: layout da tela de Ajustes
+   (adicione ISSO no FINAL do seu style.css,
+   depois do bloco .config-status-off)
+
+   Problema: existem 3 definições de .page-content
+   no arquivo brigando entre si, então a tela de
+   Ajustes acaba renderizando como grid de 3 colunas
+   (Menu | OBD | LED lado a lado) em vez de coluna
+   única com rolagem — cortando os campos de baixo,
+   incluindo os seletores de cor do LED.
+
+   Esta regra usa #page-ajustes (ID + classe) para
+   garantir que SEMPRE vença qualquer outra regra de
+   .page-content, não importa a ordem no arquivo.
+========================================== */
+#page-ajustes.page-content {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 6px !important;
+    gap: 6px !important;
+    scrollbar-width: thin;
+    scrollbar-color: #333 #0a0a0c;
+}
+
+#page-ajustes.page-content::-webkit-scrollbar {
+    width: 4px;
+}
+#page-ajustes.page-content::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 2px;
+}
+#page-ajustes.page-content::-webkit-scrollbar-track {
+    background: #0a0a0c;
+}
+
+/* Cada painel (OBD / LED) ocupa a largura toda, empilhados */
+#page-ajustes .config-panel {
+    flex-shrink: 0;
+    width: 100%;
+}
+
+#page-ajustes .settings-static-grid {
+    flex-shrink: 0;
+}

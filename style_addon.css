@@ -1,0 +1,10 @@
+
+/* ==========================================
+   ADICIONAR AO FINAL DO style.css
+   Badge de status "desconectado" para o
+   controle manual de conexão OBD-II
+========================================== */
+.config-status-off {
+    background: #2e1a1a;
+    color: #ff3b30;
+}

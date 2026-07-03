@@ -28,6 +28,11 @@ const SCREEN_ALERT_RPM = 4000;
 let ledAutoMode = true;
 let ledManualColorHex = '#ff0000';
 
+// Estado local da conexão OBD-II (porta serial). Agora é manual:
+// só fica "true" depois que o usuário aperta "Ligar Conexão" e o
+// backend confirma que abriu a porta com sucesso.
+let obdConnected = false;
+
 chkManualMode.onchange = () => toggleInputsState();
 
 function toggleInputsState() {
@@ -118,6 +123,7 @@ function inicializarElementosDinamicos(pagina) {
         inicializarConfigOBD();
         inicializarConfigLED();
         inicializarControlesLed();
+        inicializarControlesObd();
     }
 }
 
@@ -128,6 +134,18 @@ function inicializarElementosDinamicos(pagina) {
 function toggleConfigPanel(panelId) {
     const panel = document.getElementById(panelId);
     if (!panel) return;
+
+    const isOpening = !panel.classList.contains('panel-open');
+
+    // Comportamento "acordeão": ao abrir um painel, fecha os outros.
+    // Evita que OBD e LED fiquem abertos ao mesmo tempo, o que
+    // sobrecarrega a tela pequena e corta os campos de baixo.
+    if (isOpening) {
+        document.querySelectorAll('.config-panel.panel-open').forEach(p => {
+            if (p.id !== panelId) p.classList.remove('panel-open');
+        });
+    }
+
     panel.classList.toggle('panel-open');
 }
 
@@ -201,6 +219,48 @@ function inicializarConfigOBD() {
             btnSave.innerHTML = '<span class="save-icon">✓</span> Salvar Conexão';
         }, 2000);
     };
+}
+
+// ==========================================
+// CONTROLE MANUAL DA CONEXÃO OBD-II (Ligar/Desligar)
+// ==========================================
+
+function inicializarControlesObd() {
+    const btnConnect = document.getElementById('btn-obd-connect');
+    const btnDisconnect = document.getElementById('btn-obd-disconnect');
+
+    if (!btnConnect || !btnDisconnect) return;
+
+    // Reflete o estado atual (caso o usuário já tenha ligado antes de abrir essa tela)
+    atualizarUiConexaoObd();
+
+    btnConnect.onclick = () => {
+        btnConnect.disabled = true;
+        btnConnect.innerText = 'Conectando...';
+        sendLedCommand({ cmd: 'connect_obd' });
+    };
+
+    btnDisconnect.onclick = () => {
+        sendLedCommand({ cmd: 'disconnect_obd' });
+    };
+}
+
+function atualizarUiConexaoObd() {
+    const btnConnect = document.getElementById('btn-obd-connect');
+    const btnDisconnect = document.getElementById('btn-obd-disconnect');
+    const badge = document.getElementById('obd-conn-badge');
+
+    if (btnConnect) {
+        btnConnect.disabled = obdConnected;
+        btnConnect.innerText = obdConnected ? 'Conectado' : 'Ligar Conexão';
+    }
+    if (btnDisconnect) {
+        btnDisconnect.disabled = !obdConnected;
+    }
+    if (badge) {
+        badge.innerText = obdConnected ? 'CONECTADO' : 'DESCONECTADO';
+        badge.classList.toggle('config-status-off', !obdConnected);
+    }
 }
 
 // ==========================================
@@ -548,12 +608,31 @@ function connectWebSocket() {
     };
 
     socket.onmessage = (event) => {
-        if (chkManualMode.checked) return; // Prioridade manual se selecionado
-
         const data = JSON.parse(event.data);
 
+        // Mensagens de comando/controle (não são telemetria — ex: resultado
+        // do botão "Ligar/Desligar Conexão", confirmação de config salva).
+        if (data.cmd) {
+            if (data.cmd === 'obd_connection_result') {
+                obdConnected = !!data.connected;
+                atualizarUiConexaoObd();
+            }
+            // 'current_config' e 'config_saved' já são tratados nos próprios
+            // handlers de clique/carregamento da tela de Ajustes.
+            return;
+        }
+
+        if (chkManualMode.checked) return; // Prioridade manual se selecionado
+
+        if (typeof data.obd_connected === 'boolean' && data.obd_connected !== obdConnected) {
+            obdConnected = data.obd_connected;
+            atualizarUiConexaoObd();
+        }
+
         if (data.error) {
-            document.getElementById('ecu-mode').innerText = "OBD-II: BUSCANDO ECU...";
+            document.getElementById('ecu-mode').innerText = obdConnected
+                ? "OBD-II: BUSCANDO ECU..."
+                : "OBD-II: DESCONECTADO (toque em Ligar Conexão nos Ajustes)";
             document.getElementById('ecu-mode').className = "status-left searching";
         } else {
             document.getElementById('ecu-mode').innerText = "Sinal OBD-II: OK";

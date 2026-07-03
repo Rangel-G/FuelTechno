@@ -1,0 +1,24 @@
+# ==========================================
+# FuelTechno - Dependências
+# ==========================================
+
+# Comunicação Serial (OBD-II)
+pyserial>=3.5
+
+# Bluetooth Low Energy (LED RGB)
+bleak>=3.0.2
+bleak-retry-connector>=4.6.1
+
+# Comunicação WebSocket entre bridge.py e interface
+websockets>=15.0
+
+# Servidor HTTP (caso utilizado)
+Flask>=3.1.0
+Flask-Cors>=6.0.0
+
+# Variáveis de ambiente (.env)
+python-dotenv>=1.1.0
+
+# Janela nativa do app único (main.py) — usada para abrir a interface
+# sem precisar de navegador/CMD, e é a base para gerar o .exe
+pywebview>=5.0
