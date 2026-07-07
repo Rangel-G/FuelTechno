@@ -47,7 +47,6 @@ function toggleInputsState() {
 async function carregarPagina(nomePagina) {
     let arquivoParaCarregar = `pages/${nomePagina}.html`;
 
-    // Se for painel, ele busca o arquivo específico do mapa
     if (nomePagina === 'painel') {
         const mapaSlug = currentActiveMapName.toLowerCase()
             .normalize('NFD').replace(/[\u0300-\u036f]/g, "");
@@ -55,7 +54,10 @@ async function carregarPagina(nomePagina) {
     }
 
     try {
-        const resposta = await fetch(arquivoParaCarregar);
+        // cache: 'no-store' evita que o navegador/WebView reaproveite uma
+        // versão antiga do HTML — esse fetch roda via JS a cada troca de
+        // aba, então sem isso o cache HTTP pode servir o arquivo velho.
+        const resposta = await fetch(arquivoParaCarregar, { cache: 'no-store' });
         const html = await resposta.text();
         viewport.innerHTML = html;
         inicializarElementosDinamicos(nomePagina);
@@ -155,11 +157,14 @@ function toggleConfigPanel(panelId) {
 
 // Mapa de placeholders por tipo de conexão
 const OBD_TYPE_HINTS = {
-    'serial-com':    { label: 'Porta Serial',       placeholder: 'COM4',                  baudVisible: true },
-    'serial-rfcomm': { label: 'Dispositivo Bluetooth', placeholder: '/dev/rfcomm0',        baudVisible: true },
-    'serial-usb':    { label: 'Dispositivo USB',     placeholder: '/dev/ttyUSB0',          baudVisible: true },
-    'wifi':          { label: 'Endereço IP:Porta',   placeholder: '192.168.0.10:35000',    baudVisible: false },
+    'serial-com': { label: 'Porta Serial', placeholder: 'COM4', baudVisible: true },
+    'serial-rfcomm': { label: 'Dispositivo Bluetooth', placeholder: '/dev/rfcomm0', baudVisible: true },
+    'serial-usb': { label: 'Dispositivo USB', placeholder: '/dev/ttyUSB0', baudVisible: true },
+    'wifi': { label: 'Endereço IP:Porta', placeholder: '192.168.0.10:35000', baudVisible: false },
+    'ftdi-d2xx': { label: 'Adaptador FTDI (D2XX)', placeholder: '', baudVisible: true },
 };
+
+let savedFtdiSerialToApply = '';
 
 function inicializarConfigOBD() {
     const typeSelect = document.getElementById('cfg-obd-type');
@@ -172,46 +177,53 @@ function inicializarConfigOBD() {
 
     if (!typeSelect || !addrInput || !btnSave) return;
 
-    // Carrega configuração salva (localStorage como fallback imediato)
     const saved = JSON.parse(localStorage.getItem('ft_config_obd') || '{}');
 
     if (saved.connection_type) typeSelect.value = saved.connection_type;
     if (saved.serial_port) addrInput.value = saved.serial_port;
     if (saved.baud_rate && baudSelect) baudSelect.value = String(saved.baud_rate);
     if (saved.protocol && protoSelect) protoSelect.value = saved.protocol;
+    if (saved.ftdi_serial) savedFtdiSerialToApply = saved.ftdi_serial;
 
-    // Atualiza badge com o endereço salvo
     if (badge && saved.serial_port) badge.innerText = saved.serial_port;
 
-    // Atualiza placeholder quando muda o tipo
     function updatePlaceholder() {
         const hints = OBD_TYPE_HINTS[typeSelect.value] || OBD_TYPE_HINTS['serial-com'];
+        const isFtdi = typeSelect.value === 'ftdi-d2xx';
+
         addrInput.placeholder = hints.placeholder;
         if (addrLabel) addrLabel.innerText = hints.label;
-        // Esconde baud rate para WiFi
+
+        const addrField = addrInput.closest('.config-field');
+        const ftdiWrapper = document.getElementById('cfg-obd-ftdi-wrapper');
+        if (addrField) addrField.style.display = isFtdi ? 'none' : '';
+        if (ftdiWrapper) ftdiWrapper.style.display = isFtdi ? '' : 'none';
+
         const baudField = baudSelect?.closest('.config-field');
         if (baudField) baudField.style.display = hints.baudVisible ? '' : 'none';
+
+        if (isFtdi) buscarDispositivosFtdi();
     }
     typeSelect.onchange = updatePlaceholder;
     updatePlaceholder();
 
-    // Salvar
     btnSave.onclick = () => {
+        const isFtdi = typeSelect.value === 'ftdi-d2xx';
+        const ftdiSelect = document.getElementById('cfg-obd-ftdi-device');
+
         const config = {
             connection_type: typeSelect.value,
             serial_port: addrInput.value || addrInput.placeholder,
             baud_rate: baudSelect ? parseInt(baudSelect.value) : 38400,
             protocol: protoSelect ? protoSelect.value : 'auto',
+            ftdi_serial: isFtdi ? (ftdiSelect?.value || '') : '',
         };
         localStorage.setItem('ft_config_obd', JSON.stringify(config));
 
-        // Atualiza badge
-        if (badge) badge.innerText = config.serial_port;
+        if (badge) badge.innerText = isFtdi ? 'FTDI' : config.serial_port;
 
-        // Envia pro backend via WebSocket
         sendLedCommand({ cmd: 'update_config', section: 'obd', ...config });
 
-        // Feedback visual
         btnSave.classList.add('saved');
         btnSave.innerHTML = '<span class="save-icon">✓</span> Salvo!';
         setTimeout(() => {
@@ -275,6 +287,7 @@ function inicializarConfigLED() {
     const nameInput = document.getElementById('cfg-led-name');
     const uuidInput = document.getElementById('cfg-led-uuid');
     const redlineInput = document.getElementById('cfg-led-redline');
+    const blinkInput = document.getElementById('cfg-led-blink');
     const colorNormal = document.getElementById('cfg-led-color-normal');
     const colorRedline = document.getElementById('cfg-led-color-redline');
     const lblNormal = document.getElementById('lbl-color-normal');
@@ -290,6 +303,7 @@ function inicializarConfigLED() {
     if (saved.device_name) nameInput.value = saved.device_name;
     if (saved.char_uuid) uuidInput.value = saved.char_uuid;
     if (saved.redline_rpm) redlineInput.value = saved.redline_rpm;
+    if (saved.blink_interval_ms) blinkInput.value = saved.blink_interval_ms;
     if (saved.color_normal && colorNormal) {
         colorNormal.value = rgbToHex(...saved.color_normal);
     }
@@ -320,6 +334,7 @@ function inicializarConfigLED() {
             device_name: nameInput.value || nameInput.placeholder,
             char_uuid: uuidInput?.value || uuidInput?.placeholder || '0000ffe1-0000-1000-8000-00805f9b34fb',
             redline_rpm: parseInt(redlineInput?.value || '3000'),
+            blink_interval_ms: parseInt(blinkInput?.value || '70'),
             color_normal: [normalRgb.r, normalRgb.g, normalRgb.b],
             color_redline: [redlineRgb.r, redlineRgb.g, redlineRgb.b],
         };
@@ -616,6 +631,10 @@ function connectWebSocket() {
             if (data.cmd === 'obd_connection_result') {
                 obdConnected = !!data.connected;
                 atualizarUiConexaoObd();
+            }
+
+            if (data.cmd === 'ftdi_devices_result') {
+                preencherListaFtdi(data.devices);
             }
             // 'current_config' e 'config_saved' já são tratados nos próprios
             // handlers de clique/carregamento da tela de Ajustes.

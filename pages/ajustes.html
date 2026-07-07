@@ -43,6 +43,7 @@
                 <label>Tipo de Conexão</label>
                 <select id="cfg-obd-type" class="config-select">
                     <option value="serial-com">Porta COM (Windows)</option>
+                    <option value="ftdi-d2xx">FTDI Direto (D2XX — como o FORScan)</option>
                     <option value="serial-rfcomm">Bluetooth Pareado (Linux)</option>
                     <option value="serial-usb">USB Serial (ttyUSB/ttyACM)</option>
                     <option value="wifi">WiFi / TCP (Adaptador WiFi OBD)</option>
@@ -51,6 +52,16 @@
             <div class="config-field">
                 <label id="cfg-obd-addr-label">Porta Serial</label>
                 <input type="text" id="cfg-obd-addr" class="config-input" placeholder="COM4">
+            </div>
+            <div class="config-field" id="cfg-obd-ftdi-wrapper" style="display:none;">
+                <label>Adaptador FTDI Detectado</label>
+                <div class="config-field-row" style="margin-bottom:0;">
+                    <select id="cfg-obd-ftdi-device" class="config-select" style="flex:1;">
+                        <option value="">-- Nenhum adaptador encontrado --</option>
+                    </select>
+                    <button type="button" id="btn-refresh-ftdi" class="led-btn" style="flex:0 0 auto;">🔄
+                        Buscar</button>
+                </div>
             </div>
             <div class="config-field">
                 <label>Baud Rate</label>
@@ -98,11 +109,20 @@
             </div>
             <div class="config-field">
                 <label>UUID da Característica</label>
-                <input type="text" id="cfg-led-uuid" class="config-input" placeholder="0000ffe1-0000-1000-8000-00805f9b34fb">
+                <input type="text" id="cfg-led-uuid" class="config-input"
+                    placeholder="0000ffe1-0000-1000-8000-00805f9b34fb">
             </div>
-            <div class="config-field">
-                <label>RPM do Shift Light</label>
-                <input type="number" id="cfg-led-redline" class="config-input" placeholder="3000" min="1000" max="9000" step="100">
+            <div class="config-field-row">
+                <div class="config-field config-field-half">
+                    <label>RPM do Shift Light</label>
+                    <input type="number" id="cfg-led-redline" class="config-input" placeholder="3000" min="1000"
+                        max="9000" step="100">
+                </div>
+                <div class="config-field config-field-half">
+                    <label>Velocidade do Pisca (ms)</label>
+                    <input type="number" id="cfg-led-blink" class="config-input" placeholder="70" min="20" max="1000"
+                        step="10">
+                </div>
             </div>
             <div class="config-field-row">
                 <div class="config-field config-field-half">

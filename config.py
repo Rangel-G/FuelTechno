@@ -3,6 +3,7 @@ import logging
 
 config_logger = logging.getLogger("config")
 
+
 # Helper to load .env file manually (so we don't depend on python-dotenv)
 def load_dotenv():
     env_path = os.path.join(os.path.dirname(__file__), ".env")
@@ -62,6 +63,10 @@ load_dotenv()
 # --- OBD-II Connection Configurations ---
 OBD_CONNECTION_TYPE = os.getenv("OBD_CONNECTION_TYPE", "serial-com")
 OBD_PROTOCOL = os.getenv("OBD_PROTOCOL", "auto")
+# --- FTDI (usado quando OBD_CONNECTION_TYPE = "serial-ftdi") ---
+# Guarda o NÚMERO DE SÉRIE do chip, não a porta COM — assim a conexão
+# continua funcionando mesmo se o Windows atribuir outro número de porta.
+OBD_FTDI_SERIAL = os.getenv("OBD_FTDI_SERIAL", "")
 
 # --- LED Configurations ---
 LED_DEVICE_NAME = os.getenv("LED_DEVICE_NAME", "LEDDMX-000101")
@@ -92,6 +97,13 @@ try:
 except ValueError:
     LED_REDLINE_RPM = 3000
 
+# --- Velocidade do Pisca do Shift Light (em milissegundos) ---
+try:
+    LED_BLINK_INTERVAL_MS = int(os.getenv("LED_BLINK_INTERVAL_MS", "70"))
+except ValueError:
+    LED_BLINK_INTERVAL_MS = 70
+
+
 def _parse_color(color_str, default):
     try:
         parts = [int(x.strip()) for x in color_str.split(",")]
@@ -100,6 +112,7 @@ def _parse_color(color_str, default):
     except Exception:
         pass
     return default
+
 
 LED_COLOR_NORMAL = _parse_color(os.getenv("LED_COLOR_NORMAL", ""), (0, 0, 255))
 LED_COLOR_REDLINE = _parse_color(os.getenv("LED_COLOR_REDLINE", ""), (255, 0, 0))
