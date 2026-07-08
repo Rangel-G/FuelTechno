@@ -61,7 +61,7 @@ def save_to_env(updates: dict):
 load_dotenv()
 
 # --- OBD-II Connection Configurations ---
-OBD_CONNECTION_TYPE = os.getenv("OBD_CONNECTION_TYPE", "serial-com")
+OBD_CONNECTION_TYPE = os.getenv("OBD_CONNECTION_TYPE", "bluetooth")
 OBD_PROTOCOL = os.getenv("OBD_PROTOCOL", "auto")
 # --- FTDI (usado quando OBD_CONNECTION_TYPE = "serial-ftdi") ---
 # Guarda o NÚMERO DE SÉRIE do chip, não a porta COM — assim a conexão

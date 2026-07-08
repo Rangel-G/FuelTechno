@@ -8,7 +8,8 @@ const sliders = {
     speed: document.getElementById('param-speed'),
     map: document.getElementById('param-map'),
     ect: document.getElementById('param-ect'),
-    fpress: document.getElementById('param-fpress')
+    fpress: document.getElementById('param-fpress'),
+    fuel: document.getElementById('param-fuel')
 };
 
 const labels = {
@@ -16,18 +17,17 @@ const labels = {
     speed: document.getElementById('lbl-speed'),
     map: document.getElementById('lbl-map'),
     ect: document.getElementById('lbl-ect'),
-    fpress: document.getElementById('lbl-fpress')
+    fpress: document.getElementById('lbl-fpress'),
+    fuel: document.getElementById('lbl-fuel')
 };
 
 let currentActiveMapName = 'Diário';
 let tractionControlActive = true;
 let socket = null;
 const SCREEN_ALERT_RPM = 4000;
-
 // Estado local (espelha o que foi mandado pro bridge) dos controles de LED
 let ledAutoMode = true;
 let ledManualColorHex = '#ff0000';
-
 // Estado local da conexão OBD-II (porta serial). Agora é manual:
 // só fica "true" depois que o usuário aperta "Ligar Conexão" e o
 // backend confirma que abriu a porta com sucesso.
@@ -157,14 +157,9 @@ function toggleConfigPanel(panelId) {
 
 // Mapa de placeholders por tipo de conexão
 const OBD_TYPE_HINTS = {
-    'serial-com': { label: 'Porta Serial', placeholder: 'COM4', baudVisible: true },
-    'serial-rfcomm': { label: 'Dispositivo Bluetooth', placeholder: '/dev/rfcomm0', baudVisible: true },
-    'serial-usb': { label: 'Dispositivo USB', placeholder: '/dev/ttyUSB0', baudVisible: true },
-    'wifi': { label: 'Endereço IP:Porta', placeholder: '192.168.0.10:35000', baudVisible: false },
-    'ftdi-d2xx': { label: 'Adaptador FTDI (D2XX)', placeholder: '', baudVisible: true },
+    'bluetooth': { label: 'Porta COM (Bluetooth)', placeholder: 'COM4', baudVisible: true },
+    'usb': { label: 'Porta COM (USB)', placeholder: 'COM7', baudVisible: true },
 };
-
-let savedFtdiSerialToApply = '';
 
 function inicializarConfigOBD() {
     const typeSelect = document.getElementById('cfg-obd-type');
@@ -177,51 +172,59 @@ function inicializarConfigOBD() {
 
     if (!typeSelect || !addrInput || !btnSave) return;
 
-    const saved = JSON.parse(localStorage.getItem('ft_config_obd') || '{}');
+    // Configuração salva POR TIPO (permite alternar Bluetooth/USB sem perder
+    // a porta COM de cada um)
+    const allSaved = JSON.parse(localStorage.getItem('ft_config_obd_by_type') || '{}');
 
-    if (saved.connection_type) typeSelect.value = saved.connection_type;
-    if (saved.serial_port) addrInput.value = saved.serial_port;
-    if (saved.baud_rate && baudSelect) baudSelect.value = String(saved.baud_rate);
-    if (saved.protocol && protoSelect) protoSelect.value = saved.protocol;
-    if (saved.ftdi_serial) savedFtdiSerialToApply = saved.ftdi_serial;
+    // Migração automática de configs antigas (versão com 4 tipos de conexão)
+    const legacy = JSON.parse(localStorage.getItem('ft_config_obd') || '{}');
+    if (legacy.connection_type && Object.keys(allSaved).length === 0) {
+        const migratedType = legacy.connection_type.includes('usb') ? 'usb' : 'bluetooth';
+        allSaved[migratedType] = legacy;
+        localStorage.setItem('ft_config_obd_by_type', JSON.stringify(allSaved));
+    }
 
-    if (badge && saved.serial_port) badge.innerText = saved.serial_port;
+    function loadTypeConfig(type) {
+        const saved = allSaved[type] || {};
+        addrInput.value = saved.serial_port || '';
+        if (baudSelect) baudSelect.value = String(saved.baud_rate || 38400);
+        if (protoSelect) protoSelect.value = saved.protocol || 'auto';
+        if (badge) badge.innerText = saved.serial_port || type.toUpperCase();
+    }
 
     function updatePlaceholder() {
-        const hints = OBD_TYPE_HINTS[typeSelect.value] || OBD_TYPE_HINTS['serial-com'];
-        const isFtdi = typeSelect.value === 'ftdi-d2xx';
-
+        const hints = OBD_TYPE_HINTS[typeSelect.value] || OBD_TYPE_HINTS['bluetooth'];
         addrInput.placeholder = hints.placeholder;
         if (addrLabel) addrLabel.innerText = hints.label;
-
-        const addrField = addrInput.closest('.config-field');
-        const ftdiWrapper = document.getElementById('cfg-obd-ftdi-wrapper');
-        if (addrField) addrField.style.display = isFtdi ? 'none' : '';
-        if (ftdiWrapper) ftdiWrapper.style.display = isFtdi ? '' : 'none';
-
         const baudField = baudSelect?.closest('.config-field');
         if (baudField) baudField.style.display = hints.baudVisible ? '' : 'none';
-
-        if (isFtdi) buscarDispositivosFtdi();
     }
-    typeSelect.onchange = updatePlaceholder;
+
+    // Restaura o último tipo usado (ou Bluetooth por padrão)
+    const lastType = localStorage.getItem('ft_config_obd_last_type') || 'bluetooth';
+    typeSelect.value = lastType;
     updatePlaceholder();
+    loadTypeConfig(lastType);
+
+    typeSelect.onchange = () => {
+        updatePlaceholder();
+        loadTypeConfig(typeSelect.value);
+        localStorage.setItem('ft_config_obd_last_type', typeSelect.value);
+    };
 
     btnSave.onclick = () => {
-        const isFtdi = typeSelect.value === 'ftdi-d2xx';
-        const ftdiSelect = document.getElementById('cfg-obd-ftdi-device');
-
+        const type = typeSelect.value;
         const config = {
-            connection_type: typeSelect.value,
+            connection_type: type,
             serial_port: addrInput.value || addrInput.placeholder,
             baud_rate: baudSelect ? parseInt(baudSelect.value) : 38400,
             protocol: protoSelect ? protoSelect.value : 'auto',
-            ftdi_serial: isFtdi ? (ftdiSelect?.value || '') : '',
         };
-        localStorage.setItem('ft_config_obd', JSON.stringify(config));
+        allSaved[type] = config;
+        localStorage.setItem('ft_config_obd_by_type', JSON.stringify(allSaved));
+        localStorage.setItem('ft_config_obd_last_type', type);
 
-        if (badge) badge.innerText = isFtdi ? 'FTDI' : config.serial_port;
-
+        if (badge) badge.innerText = config.serial_port;
         sendLedCommand({ cmd: 'update_config', section: 'obd', ...config });
 
         btnSave.classList.add('saved');
@@ -490,20 +493,19 @@ function safeSetStyleWidth(id, widthValue) {
     if (el) el.style.width = widthValue;
 }
 
-function renderEcuUI(rpm, speed, map, ect, fpress, fpress_avail, load, battery, milOn, dtcCount) {
-    // 1. Preparação de Dados (Cálculos específicos)
+function renderEcuUI(rpm, speed, map, ect, fpress, fpress_avail, load, battery, fuel, milOn, dtcCount) {
     const gear = calculateZetecRocamGear(rpm, speed);
 
-    // Mapeamento automático de valores simples (ID HTML -> Valor)
     const values = {
-        'val-rpm': rpm, // Adicionado para garantir o mapeamento do RPM numérico nos novos painéis
+        'val-rpm': rpm,
         'val-speed': speed,
         'val-gear': gear,
         'val-map': map.toFixed(2),
         'val-ect': ect,
         'val-power': `${load}%`,
         'val-fpress': fpress_avail ? fpress.toFixed(2) : "N/D",
-        'val-battery': (battery || 0).toFixed(1)
+        'val-battery': (battery || 0).toFixed(1),
+        'val-fuel': fuel
     };
 
     // Atualização dinâmica: se o ID existir na tela, ele recebe o valor
@@ -590,6 +592,7 @@ function syncManualControls(rpm, speed, map, ect, fpress, fpress_avail) {
     }
 }
 
+// dentro de runManualLoop (bancada manual):
 function runManualLoop() {
     if (chkManualMode.checked) {
         let loadCalc = Math.round(((parseFloat(sliders.map.value) + 1) / 4) * 100);
@@ -602,6 +605,7 @@ function runManualLoop() {
             true,
             Math.max(12, Math.min(100, loadCalc)),
             12.6,
+            sliders.fuel ? parseInt(sliders.fuel.value) : 75,
             false,
             0
         );
@@ -658,7 +662,7 @@ function connectWebSocket() {
             document.getElementById('ecu-mode').className = "status-left";
         }
 
-        renderEcuUI(data.rpm, data.speed, data.map, data.ect, data.fpress, data.fpress_avail, data.load, data.battery, data.mil_on, data.dtc_count);
+        renderEcuUI(data.rpm, data.speed, data.map, data.ect, data.fpress, data.fpress_avail, data.load, data.battery, data.fuel, data.mil_on, data.dtc_count);
     };
 
     socket.onclose = () => {

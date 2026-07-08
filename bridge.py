@@ -243,11 +243,11 @@ class ELM327Bridge:
 
     def _init_elm(self):
         commands = [
-            "ATZ",  # Reset do dispositivo
-            "ATE0",  # Eco desligado (Echo Off)
-            "ATL0",  # Linefeeds desligados
-            "ATS0",  # Espaços removidos das respostas para facilitar o parse
-            "ATSP0",  # Auto-detectar protocolo OBD-II do veículo
+            "ATZ",
+            "ATE0",
+            "ATL0",
+            "ATS0",
+            "ATSP0",  # <- já deixa o OBDLink EX escolher/alternar a rede sozinho
         ]
         for cmd in commands:
             res = self._send_cmd(cmd)
@@ -287,7 +287,8 @@ class ELM327Bridge:
             "fpress": 0.0,
             "fpress_avail": False,
             "load": 0,
-            "battery": 12.0,
+            "battery": 0.0,
+            "fuel": 0,
             "mil_on": False,
             "dtc_count": 0,
         }
@@ -349,6 +350,12 @@ class ELM327Bridge:
             byte_a = bytes_mon[0]
             payload["mil_on"] = bool(byte_a & 0x80)
             payload["dtc_count"] = byte_a & 0x7F
+
+        # PID 012F - Nível do Tanque de Combustível
+        res_fuel = self._send_cmd("012F")
+        bytes_fuel = self.parse_hex_response(res_fuel, "412F", 1)
+        if bytes_fuel:
+            payload["fuel"] = int((bytes_fuel[0] * 100) / 255)
 
         return payload
 
@@ -566,6 +573,7 @@ async def telemetry_sender(websocket, bridge, bridge_ready_holder):
                 "fpress_avail": False,
                 "load": 0,
                 "battery": 0.0,
+                "fuel": 0,
                 "mil_on": False,
                 "dtc_count": 0,
                 "error": True,
