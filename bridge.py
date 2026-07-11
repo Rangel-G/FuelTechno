@@ -179,7 +179,7 @@ class FtdiD2xxAdapter:
             else:
                 time.sleep(0.01)
         return buf
-    
+
     def _detect_supported_pids(self):
         """
         Pergunta 0100/0120/0140 pra descobrir quais PIDs a ECU realmente
@@ -190,16 +190,16 @@ class FtdiD2xxAdapter:
         blocks = [("0100", 0x00), ("0120", 0x20), ("0140", 0x40)]
         for query_pid, base in blocks:
             res = self._send_cmd(query_pid)
-        expected = "41" + query_pid[2:]
-        data = self.parse_hex_response(res, expected, 4)
-        if not data:
-            break
-        bitmask = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3]
-        for i in range(32):
-            if bitmask & (1 << (31 - i)):
-                self.supported_pids.add(f"{base + i + 1:02X}")
-        if not (bitmask & 0x01):
-            break
+            expected = "41" + query_pid[2:]
+            data = self.parse_hex_response(res, expected, 4)
+            if not data:
+                break
+            bitmask = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3]
+            for i in range(32):
+                if bitmask & (1 << (31 - i)):
+                    self.supported_pids.add(f"{base + i + 1:02X}")
+            if not (bitmask & 0x01):
+                break
         logging.info(f"[OBD] PIDs suportados: {sorted(self.supported_pids)}")
 
     def close(self):
@@ -306,7 +306,7 @@ class ELM327Bridge:
                 except ValueError:
                     return []
         return []
-    
+
     def _detect_supported_pids(self):
         """
         Pergunta 0100/0120/0140 pra descobrir quais PIDs a ECU realmente
@@ -317,17 +317,17 @@ class ELM327Bridge:
         blocks = [("0100", 0x00), ("0120", 0x20), ("0140", 0x40)]
         for query_pid, base in blocks:
             res = self._send_cmd(query_pid)
-        expected = "41" + query_pid[2:]
-        data = self.parse_hex_response(res, expected, 4)
-        if not data:
-            break
-        bitmask = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3]
-        for i in range(32):
-            if bitmask & (1 << (31 - i)):
-                self.supported_pids.add(f"{base + i + 1:02X}")
-        if not (bitmask & 0x01):
-            break
-    logging.info(f"[OBD] PIDs suportados: {sorted(self.supported_pids)}")
+            expected = "41" + query_pid[2:]
+            data = self.parse_hex_response(res, expected, 4)
+            if not data:
+                break
+            bitmask = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3]
+            for i in range(32):
+                if bitmask & (1 << (31 - i)):
+                    self.supported_pids.add(f"{base + i + 1:02X}")
+            if not (bitmask & 0x01):
+                break
+        logging.info(f"[OBD] PIDs suportados: {sorted(self.supported_pids)}")
 
     def query_telemetry(self) -> dict:
         payload = {
@@ -349,10 +349,10 @@ class ELM327Bridge:
 
         # PID 010C - RPM (2 Bytes)
         if not self.supported_pids or "0C" in self.supported_pids:
-        res_rpm = self._send_cmd("010C")
-        bytes_rpm = self.parse_hex_response(res_rpm, "410C", 2)
-        if bytes_rpm:
-            payload["rpm"] = int(((bytes_rpm[0] * 256) + bytes_rpm[1]) / 4)
+            res_rpm = self._send_cmd("010C")
+            bytes_rpm = self.parse_hex_response(res_rpm, "410C", 2)
+            if bytes_rpm:
+                payload["rpm"] = int(((bytes_rpm[0] * 256) + bytes_rpm[1]) / 4)
 
         # PID 010D - Velocidade VSS (1 Byte)
         if not self.supported_pids or "0D" in self.supported_pids:

@@ -29,7 +29,9 @@ import webview
 
 import bridge  # reaproveita toda a lógica existente do bridge.py
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
 
 HTTP_PORT = 8000
 
@@ -47,9 +49,13 @@ def resource_path(relative_path: str) -> str:
 def start_static_server():
     """Sobe um servidor HTTP simples servindo os arquivos do frontend."""
     frontend_dir = resource_path(".")
-    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=frontend_dir)
+    handler = functools.partial(
+        http.server.SimpleHTTPRequestHandler, directory=frontend_dir
+    )
     httpd = http.server.ThreadingHTTPServer(("127.0.0.1", HTTP_PORT), handler)
-    threading.Thread(target=httpd.serve_forever, daemon=True, name="static-server").start()
+    threading.Thread(
+        target=httpd.serve_forever, daemon=True, name="static-server"
+    ).start()
     logging.info(f"Frontend servido em http://127.0.0.1:{HTTP_PORT}")
 
 
@@ -58,6 +64,7 @@ def start_bridge_loop():
     Sobe o bridge (WebSocket + OBD-II + LED) em uma thread própria, com seu
     próprio event loop asyncio, para não travar a janela do webview.
     """
+
     def runner():
         try:
             asyncio.run(bridge.main())
