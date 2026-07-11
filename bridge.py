@@ -61,6 +61,15 @@ def rpm_to_shift_color(rpm: int):
 
 
 FTDI_VID = 0x0403  # Vendor ID padrão dos chips FTDI
+OBD_PROTOCOL_MAP = {
+    "auto": "0",
+    "iso9141": "3",
+    "iso14230": "5",
+    "can11-500": "6",
+    "can29-500": "7",
+    "can11-250": "8",
+    "can29-250": "9",
+}
 
 
 def list_ftdi_devices():
@@ -228,18 +237,19 @@ class ELM327Bridge:
     def connect(self):
         try:
             if self.use_ftdi_d2xx:
-                logging.info(
-                    f"Conectando ao ELM327 via FTDI D2XX (S/N {self.ftdi_serial})..."
-                )
-                self.ser = FtdiD2xxAdapter(self.ftdi_serial, self.baudrate, timeout=1.0)
+                ...
             else:
                 logging.info(f"Conectando ao ELM327 na porta {self.port}...")
-                self.ser = serial.Serial(self.port, self.baudrate, timeout=1.0)
-            self.is_connected = True
-            logging.info("Conexão estabelecida. Inicializando protocolo AT...")
-            self._init_elm()
-            self._detect_supported_pids()
-            return True
+                self.ser = serial.Serial(self.port, self.baudrate, timeout=2.0)
+                self.ser.dtr = True
+                self.ser.rts = True
+                time.sleep(1.0)
+                self.ser.reset_input_buffer()
+                self.is_connected = True
+                logging.info("Conexão estabelecida. Inicializando protocolo AT...")
+                self._init_elm()
+                self._detect_supported_pids()
+                return True
         except Exception as e:
             logging.error(f"Falha ao abrir conexão: {e}")
             self.is_connected = False
@@ -260,10 +270,10 @@ class ELM327Bridge:
         if not self.ser or not self.is_connected:
             return ""
         try:
+            self.ser.reset_input_buffer()  # NOVO: descarta lixo/resposta atrasada
             self.ser.write(f"{cmd}\r".encode("utf-8"))
-            time.sleep(0.05)  # Pequeno delay para processamento do clone ELM
+            time.sleep(0.05)
             response = self.ser.read_until(b">").decode("utf-8", errors="ignore")
-            # Limpa retornos de carro, quebras de linha e o prompt '>'
             return response.replace("\r", "").replace("\n", "").replace(">", "").strip()
         except Exception as e:
             logging.error(f"Erro de comunicação no comando {cmd}: {e}")
@@ -271,20 +281,21 @@ class ELM327Bridge:
             return ""
 
     def _init_elm(self):
+        proto_code = OBD_PROTOCOL_MAP.get(config.OBD_PROTOCOL, "0")
         commands = [
             "ATZ",
             "ATE0",
             "ATL0",
             "ATS0",
-            "ATSP0",  # <- já deixa o OBDLink EX escolher/alternar a rede sozinho
+            f"ATSP{proto_code}",  # usa o protocolo salvo nos Ajustes; "0" = auto
         ]
         for cmd in commands:
             res = self._send_cmd(cmd)
             logging.info(f"Enviado: {cmd} -> Resposta: {res}")
 
-        # Força uma leitura inicial para validar o protocolo do carro
         logging.info("Aguardando sincronismo com a ECU do veículo...")
-        time.sleep(1)
+
+    time.sleep(1)
 
     def parse_hex_response(
         self, response: str, expected_prefix: str, bytes_needed: int
@@ -408,7 +419,7 @@ class ELM327Bridge:
             if bytes_mon:
                 byte_a = bytes_mon[0]
                 payload["mil_on"] = bool(byte_a & 0x80)
-            payload["dtc_count"] = byte_a & 0x7F
+                payload["dtc_count"] = byte_a & 0x7F
 
         # PID 012F - Nível do Tanque de Combustível
         if not self.supported_pids or "2F" in self.supported_pids:

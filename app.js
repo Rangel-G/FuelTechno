@@ -37,7 +37,7 @@ chkManualMode.onchange = () => toggleInputsState();
 
 function toggleInputsState() {
     const isManual = chkManualMode.checked;
-    Object.values(sliders).forEach(slider => slider.disabled = !isManual);
+    Object.values(sliders).forEach(slider => slider && (slider.disabled = !isManual));
 }
 
 // ==========================================
