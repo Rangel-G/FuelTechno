@@ -9,9 +9,6 @@
             <div class="setting-icon">⚡</div>Mapa de Ignição
         </div>
         <div class="setting-item">
-            <div class="setting-icon">🚗</div>Calibrar Sensores
-        </div>
-        <div class="setting-item">
             <div class="setting-icon">⚠</div>Limites e Alertas
         </div>
     </div>
@@ -148,6 +145,37 @@
             </div>
             <button class="config-save-btn" id="btn-save-led">
                 <span class="save-icon">✓</span> Salvar LED
+            </button>
+        </div>
+    </div>
+    <div class="config-panel" id="panel-gear">
+        <div class="config-panel-header" onclick="toggleConfigPanel('panel-gear')">
+            <div class="config-panel-title">
+                <div class="setting-icon icon-gear">🚗</div>
+                <span>Calibrar Rel. Marcha</span>
+            </div>
+            <div class="config-panel-meta">
+                <span class="config-status" id="gear-status-badge">5 marchas</span>
+                <span class="config-arrow">▼</span>
+            </div>
+        </div>
+        <div class="config-panel-body" id="panel-gear-body">
+            <div class="config-field">
+                <label>Relação de Marchas (separadas por vírgula)</label>
+                <input type="text" id="cfg-gear-ratios" class="config-input" placeholder="3.58,1.93,1.41,1.11,0.88">
+            </div>
+            <div class="config-field-row">
+                <div class="config-field config-field-half">
+                    <label>Relação Diferencial</label>
+                    <input type="number" id="cfg-gear-diff" class="config-input" placeholder="4.25" step="0.01">
+                </div>
+                <div class="config-field config-field-half">
+                    <label>Perímetro do Pneu (m)</label>
+                    <input type="number" id="cfg-gear-perim" class="config-input" placeholder="1.83" step="0.01">
+                </div>
+            </div>
+            <button class="config-save-btn" id="btn-save-gear">
+                <span class="save-icon">✓</span> Salvar Rel. Marcha
             </button>
         </div>
     </div>

@@ -282,20 +282,12 @@ class ELM327Bridge:
 
     def _init_elm(self):
         proto_code = OBD_PROTOCOL_MAP.get(config.OBD_PROTOCOL, "0")
-        commands = [
-            "ATZ",
-            "ATE0",
-            "ATL0",
-            "ATS0",
-            f"ATSP{proto_code}",  # usa o protocolo salvo nos Ajustes; "0" = auto
-        ]
+        commands = ["ATZ", "ATE0", "ATL0", "ATS0", "ATAT1", f"ATSP{proto_code}"]
         for cmd in commands:
             res = self._send_cmd(cmd)
             logging.info(f"Enviado: {cmd} -> Resposta: {res}")
-
         logging.info("Aguardando sincronismo com a ECU do veículo...")
-
-    time.sleep(1)
+        time.sleep(1)
 
     def parse_hex_response(
         self, response: str, expected_prefix: str, bytes_needed: int
@@ -405,12 +397,12 @@ class ELM327Bridge:
         else:
             payload["fpress_avail"] = False
 
-        # PID 0142 - Tensão do Módulo de Controle / Bateria (2 Bytes em mV)
-        if not self.supported_pids or "42" in self.supported_pids:
-            res_volt = self._send_cmd("0142")
-            bytes_volt = self.parse_hex_response(res_volt, "4142", 2)
-            if bytes_volt:
-                payload["battery"] = ((bytes_volt[0] * 256) + bytes_volt[1]) / 1000.0
+            # PID 0142 - Tensão do Módulo de Controle / Bateria (2 Bytes em mV)
+            res_volt = self._send_cmd("ATRV")
+            try:
+                payload["battery"] = float(res_volt.replace("V", "").strip())
+            except (ValueError, AttributeError):
+                pass
 
         # PID 0101 - Status de Monitoramento (MIL ligada + quantidade de DTCs, 4 Bytes)
         if not self.supported_pids or "01" in self.supported_pids:

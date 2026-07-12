@@ -32,6 +32,8 @@ let ledManualColorHex = '#ff0000';
 // só fica "true" depois que o usuário aperta "Ligar Conexão" e o
 // backend confirma que abriu a porta com sucesso.
 let obdConnected = false;
+let gearConfig = JSON.parse(localStorage.getItem('ft_config_gear') || 'null')
+    || { ratios: [3.58, 1.93, 1.41, 1.11, 0.88], diff: 4.25, perimeter: 1.83 };
 
 chkManualMode.onchange = () => toggleInputsState();
 
@@ -122,10 +124,38 @@ function inicializarElementosDinamicos(pagina) {
 
     // 3. Lógica da tela de Ajustes (controles de configuração)
     if (pagina === 'ajustes') {
+
+
+        function inicializarConfigGear() {
+            const ratiosInput = document.getElementById('cfg-gear-ratios');
+            const diffInput = document.getElementById('cfg-gear-diff');
+            const perimInput = document.getElementById('cfg-gear-perim');
+            const btnSave = document.getElementById('btn-save-gear');
+            const badge = document.getElementById('gear-status-badge');
+            if (!ratiosInput || !btnSave) return;
+
+            ratiosInput.value = gearConfig.ratios.join(',');
+            diffInput.value = gearConfig.diff;
+            perimInput.value = gearConfig.perimeter;
+            if (badge) badge.innerText = `${gearConfig.ratios.length} marchas`;
+
+            btnSave.onclick = () => {
+                const ratios = ratiosInput.value.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v) && v > 0);
+                if (ratios.length === 0) return;
+                gearConfig = { ratios, diff: parseFloat(diffInput.value) || gearConfig.diff, perimeter: parseFloat(perimInput.value) || gearConfig.perimeter };
+                localStorage.setItem('ft_config_gear', JSON.stringify(gearConfig));
+                if (badge) badge.innerText = `${ratios.length} marchas`;
+                btnSave.classList.add('saved');
+                btnSave.innerHTML = '<span class="save-icon">✓</span> Salvo!';
+                setTimeout(() => { btnSave.classList.remove('saved'); btnSave.innerHTML = '<span class="save-icon">✓</span> Salvar Rel. Marcha'; }, 2000);
+            };
+        }
+
         inicializarConfigOBD();
         inicializarConfigLED();
         inicializarControlesLed();
         inicializarControlesObd();
+        inicializarConfigGear();
     }
 }
 
@@ -461,20 +491,17 @@ function updateTopMapLabel() {
 // RENDERIZAÇÃO E LÓGICA DO MOTOR
 // ==========================================
 
-function calculateZetecRocamGear(currentRpm, currentSpeed) {
+function calculateGear(currentRpm, currentSpeed) {
     if (currentSpeed < 4 || currentRpm < 1050) return 'N';
-    const diferencial = 4.25;
-    const marchas = [3.58, 1.93, 1.41, 1.11, 0.88];
-    const perimetroPneu = 1.83;
+    const { diff: diferencial, ratios: marchas, perimeter: perimetroPneu } = gearConfig;
 
-    let melhorMarcha = '5ª';
+    let melhorMarcha = `${marchas.length}ª`;
     let menorDiferencaRpm = Infinity;
 
     for (let i = 0; i < marchas.length; i++) {
         let relacaoTotal = marchas[i] * diferencial;
         let rpmTeoricoEsperado = (currentSpeed * relacaoTotal * 1000) / (perimetroPneu * 60);
         let diferencaRpm = Math.abs(currentRpm - rpmTeoricoEsperado);
-
         if (diferencaRpm < menorDiferencaRpm) {
             menorDiferencaRpm = diferencaRpm;
             melhorMarcha = (i + 1) + 'ª';
