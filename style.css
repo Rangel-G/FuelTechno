@@ -1161,3 +1161,19 @@ body {
     border: 2px solid #333;
     box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
 }
+
+.ecu-screen.sport-mode {
+    grid-template-rows: 0px 0px 28px 1fr 48px;
+}
+
+.ecu-screen.sport-mode .rpm-ramp-container,
+.ecu-screen.sport-mode .rpm-scale {
+    display: none;
+}
+
+.gauge-scale-text {
+    fill: #666;
+    font-size: 11px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+}

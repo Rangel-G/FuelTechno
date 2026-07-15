@@ -371,6 +371,7 @@ function inicializarConfigLED() {
             color_redline: [redlineRgb.r, redlineRgb.g, redlineRgb.b],
         };
         currentRedlineRpm = config.redline_rpm;
+        safeSetText('gauge-max-rpm', currentRedlineRpm);
         localStorage.setItem('ft_config_led', JSON.stringify(config));
 
         // Atualiza badge
@@ -446,6 +447,7 @@ function toggleTractionControl() {
 function selectActiveMap(mapName) {
     currentActiveMapName = mapName;
     updateTopMapLabel();
+    //document.getElementById('ecu-screen')?.classList.toggle('sport-mode', mapName === 'Sport');
 
     // Feedback visual nos cards de seleção
     const mapBoxes = document.querySelectorAll('.map-select-box');
@@ -696,6 +698,7 @@ function connectWebSocket() {
 
             if (data.cmd === 'current_config' && data.led?.redline_rpm) {
                 currentRedlineRpm = data.led.redline_rpm;
+                safeSetText('gauge-max-rpm', currentRedlineRpm);
             }
 
             if (data.cmd === 'ftdi_devices_result') {

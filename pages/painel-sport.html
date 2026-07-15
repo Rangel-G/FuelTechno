@@ -3,10 +3,12 @@
         <svg viewBox="0 0 200 200" class="gauge-svg">
             <circle cx="100" cy="100" r="90" class="gauge-bg" />
             <path d="M 30 155 A 90 90 0 1 1 170 155" class="gauge-arc" />
-            <g id="needle-rpm" class="gauge-needle-group">
+            <g id="needle-rpm" class="gauge-needle-group" transform="rotate(-135 100 100)">
                 <line x1="100" y1="100" x2="100" y2="25" class="gauge-needle" />
             </g>
             <circle cx="100" cy="100" r="8" class="gauge-hub" />
+            <text x="20" y="178" class="gauge-scale-text">0</text>
+            <text x="180" y="178" text-anchor="end" class="gauge-scale-text" id="gauge-max-rpm">3000</text>
         </svg>
         <div class="gauge-label">RPM</div>
         <div class="gauge-value" id="val-rpm">0</div>
@@ -16,10 +18,12 @@
         <svg viewBox="0 0 200 200" class="gauge-svg">
             <circle cx="100" cy="100" r="90" class="gauge-bg" />
             <path d="M 30 155 A 90 90 0 1 1 170 155" class="gauge-arc" />
-            <g id="needle-speed" class="gauge-needle-group">
+            <g id="needle-speed" class="gauge-needle-group" transform="rotate(-135 100 100)">
                 <line x1="100" y1="100" x2="100" y2="25" class="gauge-needle" />
             </g>
             <circle cx="100" cy="100" r="8" class="gauge-hub" />
+            <text x="20" y="178" class="gauge-scale-text">0</text>
+            <text x="180" y="178" text-anchor="end" class="gauge-scale-text">180</text>
         </svg>
         <div class="gauge-label">KM/H</div>
         <div class="gauge-value" id="val-speed">0</div>
@@ -29,10 +33,12 @@
         <svg viewBox="0 0 200 200" class="gauge-svg">
             <circle cx="100" cy="100" r="90" class="gauge-bg" />
             <path d="M 30 155 A 90 90 0 1 1 170 155" class="gauge-arc" />
-            <g id="needle-turbo" class="gauge-needle-group">
+            <g id="needle-turbo" class="gauge-needle-group" transform="rotate(-135 100 100)">
                 <line x1="100" y1="100" x2="100" y2="25" class="gauge-needle" />
             </g>
             <circle cx="100" cy="100" r="8" class="gauge-hub" />
+            <text x="20" y="178" class="gauge-scale-text">0</text>
+            <text x="180" y="178" text-anchor="end" class="gauge-scale-text">2.0</text>
         </svg>
         <div class="gauge-label">TURBO BAR</div>
         <div class="gauge-value" id="val-turbo">N/D</div>
