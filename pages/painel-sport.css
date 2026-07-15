@@ -16,32 +16,233 @@
 .page-content.panel-sport-v2.active-page {
     display: flex;
     flex-direction: column;
-    flex: 1 1 100%;
-    min-height: 100%;
+    width: 100%;
     height: 100%;
-    align-items: stretch;
-    justify-content: stretch;
+    min-height: 100%;
+    justify-content: center;
+    align-items: center;
 }
 
 .panel-sport-v2 .dashboard {
-    display: grid;
-    grid-template-columns: minmax(240px, 1fr) minmax(420px, 1.6fr) minmax(240px, 1fr);
-    gap: 20px;
-    align-items: start;
-    justify-items: center;
-    min-height: 0;
     width: 100%;
-    flex: 1;
+    max-width: 1160px;
+    display: grid;
+    grid-template-columns: 1fr 1.4fr 1fr;
+    gap: 16px;
+    align-items: stretch;
+    justify-items: stretch;
     padding: 12px;
-    background: rgba(0, 0, 0, 0.15);
-    border-radius: 24px;
-    overflow: hidden;
+    min-height: 0;
 }
 
 .panel-sport-v2 .gauge-card {
-    min-height: 340px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 28px;
+    background: radial-gradient(circle at top, rgba(0, 255, 255, 0.08), rgba(6, 10, 18, 0.98));
+    border: 1px solid rgba(0, 255, 255, 0.12);
+    box-shadow: inset 0 0 30px rgba(0, 255, 255, 0.04), 0 0 30px rgba(0, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 14px;
+}
+
+.panel-sport-v2 .gauge-card--center {
+    grid-column: 2;
+    min-height: 420px;
+}
+
+.panel-sport-v2 .gauge-card--side {
+    min-height: 360px;
+}
+
+.panel-sport-v2 .gauge-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: var(--gauge-bg-image);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    opacity: 0.12;
+    filter: blur(0.9px);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.panel-sport-v2 .gauge-svg {
     width: 100%;
     max-width: 100%;
+    height: auto;
+    display: block;
+    z-index: 1;
+}
+
+.panel-sport-v2 .sport-center-display {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.panel-sport-v2 .gauge-footer {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding-top: 10px;
+    z-index: 2;
+}
+
+.panel-sport-v2 .gauge-label {
+    color: #8be8ff;
+    font-size: 0.78rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.panel-sport-v2 .gauge-value {
+    color: #ffffff;
+    font-size: 1.5rem;
+    font-weight: 900;
+}
+
+.panel-sport-v2 .gauge-led-indicator {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid rgba(0, 240, 255, 0.85);
+    box-shadow: 0 0 16px rgba(0, 240, 255, 0.5);
+    z-index: 2;
+}
+
+@media (max-width: 940px) {
+    .panel-sport-v2 .dashboard {
+        grid-template-columns: 1fr;
+    }
+    .panel-sport-v2 .gauge-card--center,
+    .panel-sport-v2 .gauge-card--side {
+        min-height: auto;
+    }
+}
+
+.sport-ring {
+    fill: none;
+    stroke: url(#sport-ring-grad);
+    stroke-width: 18;
+    filter: drop-shadow(0 0 40px rgba(69, 243, 255, 0.35));
+}
+
+.sport-inner {
+    fill: rgba(3, 16, 40, 0.92);
+    stroke: rgba(33, 149, 255, 0.22);
+    stroke-width: 3;
+}
+
+.sport-face {
+    fill: #0f487c;
+}
+
+.sport-face,
+.sport-ring,
+.sport-inner {
+    filter: drop-shadow(0 0 40px rgba(0, 117, 255, 0.15));
+}
+
+.sport-eye {
+    fill: #ffffff;
+    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.35));
+}
+
+.sport-mouth {
+    fill: none;
+    stroke: #ffffff;
+    stroke-width: 10;
+    stroke-linecap: round;
+}
+
+.sport-ear,
+.sport-ear-right {
+    fill: #0f487c;
+}
+
+.sport-throttle-track {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 24;
+    stroke-linecap: round;
+}
+
+.sport-throttle-arc {
+    fill: none;
+    stroke: url(#sport-arc-grad);
+    stroke-width: 24;
+    stroke-linecap: round;
+    stroke-dasharray: 0 1000;
+    transform-origin: center;
+}
+
+.sport-gauge-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    pointer-events: none;
+    z-index: 3;
+}
+
+.sport-gear {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 46px;
+    color: #ffffff;
+    letter-spacing: 0.28em;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.18);
+    margin-bottom: 10px;
+}
+
+.sport-speed {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.sport-speed #val-speed {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 96px;
+    color: #ffffff;
+    letter-spacing: -0.06em;
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.18);
+}
+
+.sport-speed-unit {
+    display: block;
+    margin-top: 6px;
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.76);
+    letter-spacing: 0.3em;
+}
+
+.sport-caption {
+    margin-top: 16px;
+    color: #79e8ff;
+    font-size: 14px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
 }
 
 .panel-sport-v2 .gauge-card--center {

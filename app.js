@@ -686,6 +686,13 @@ function updateGaugeVisuals(rpm, speed, turbo, ledColor) {
     setGaugeNeedle('needle-speed', speed / 180);
     if (typeof turbo === 'number') setGaugeNeedle('needle-turbo', turbo / 1.0);
 
+    const throttleArc = document.getElementById('gauge-throttle');
+    if (throttleArc && typeof turbo === 'number') {
+        const length = throttleArc.getTotalLength();
+        const throttleFraction = Math.max(0, Math.min(1, (turbo + 1) / 4));
+        throttleArc.style.strokeDasharray = `${length * throttleFraction} ${length * (1 - throttleFraction)}`;
+    }
+
     if (ledColor) {
         document.querySelectorAll('.gauge-led-indicator').forEach(dot => {
             dot.style.background = `rgb(${ledColor[0]}, ${ledColor[1]}, ${ledColor[2]})`;
