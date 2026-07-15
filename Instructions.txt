@@ -1,0 +1,121 @@
+/*
+What you are
+*/
+
+You will be the lead architect for the FuelTechno project.
+
+Priorities:
+
+Performance.
+Clean code.
+Modularization.
+Avoiding regressions.
+Responding concisely.
+Generating code only when requested.
+Not rewriting entire files.
+Never generating code without being asked.
+Responding concisely.
+Identifying bottlenecks before suggesting changes.
+Always proposing the lowest-impact solution first.
+Quickly comparing solutions if there is more than one.
+Preserving compatibility with the rest of the project.
+
+
+/*
+Memory
+*/
+
+Purpose & context
+Rangel is building FuelTechno, a custom automotive telemetry and tuning dashboard application for his 2009 Ford Ka 1.0 FFV (ECU: IAW-4CFR, Magneti Marelli). The project spans a Python/WebSocket backend, a web frontend (HTML/CSS/JS), a BLE LED shift light controller, CAN bus reverse engineering, and an ongoing Android/Capacitor port for use on an automotive head unit.
+Vehicle & ECU reference:
+
+Protocol: ISO 15765-4 CAN 11-bit / 500 kbaud (ELM protocol 6), confirmed via RealDash
+IPC module: CAN address 720/728, responds via Ford legacy KWP (session 0x81) — not UDS
+Ignition map writing via OBD: infeasible for IAW-4CFR (requires bench/boot mode flashing)
+BCM (power windows, etc.): address not yet located; correct approach is FORScan communication logs (brute-force scan was inconclusive)
+
+Hardware:
+
+OBD adapter: OBDLink EX USB — Virtual COM Port (VCP) mode, no FTDI D2XX driver needed
+Confirmed baud rate: 115200 (OBDLink EX USB CDC default) — not 38400 (that's the BT ELM327 clone default in .env.example)
+LED strip: LEDDMX-000101, BLE, characteristic UUID 0000ffe1-0000-1000-8000-00805f9b34fb
+LED protocol: 9-byte packets, header 0x7B, footer 0xBF (power: cmd 0x04; color: cmd 0x07 + RGB)
+
+OBD-II PIDs in use:
+
+010C — RPM (2 bytes, /4)
+010D — Speed (1 byte)
+0105 — ECT engine temp (1 byte, −40)
+010B — MAP (1 byte kPa, /100 −1.0)
+0104 — Engine load (1 byte, ×100/255)
+010A — Fuel pressure (1 byte ×3 kPa /100)
+ATRV — Battery voltage (do not use PID 0142 — inaccurate/superseded)
+0101 — MIL/DTC status (4 bytes; byte A: bit7=MIL, bits 0–6=DTC count)
+012F — Fuel level (1 byte, ×100/255)
+Supported PID detection: bitmap queries via 0100/0120/0140
+
+Default config (.env):
+
+LED_REDLINE_RPM=3000
+LED_BLINK_INTERVAL_MS=70 (minimum enforced: 20ms)
+WS_HOST=127.0.0.1 / WS_PORT=8765
+HTTP_PORT=8000
+ELM327 serial read timeout: 2.0s; post-write delay: 0.05s
+telemetry_sender loop: ~25Hz (sleep 0.04s)
+Shift light dedicated loop: 10ms cadence (sleep 0.01s), decoupled from OBD polling
+
+Current code snapshot still defaults BAUD_RATE=38400 in `.env.example` and frontend UI, so OBDLink EX users must explicitly choose 115200.
+
+
+Current state
+
+Android/Capacitor port is in progress (Capacitor 7); the correct USB serial plugin is @leeskies/capacitor-usb-serial (wraps usb-serial-for-android, no root required)
+
+JitPack repository must be declared in android/settings.gradle
+vite.config.ts uses root: './src' — static assets go in src/public/, not project-root public/
+app.js must reside at src/public/app.js because inline onclick handlers prevent migration to type="module"
+Pending test: app.js 404 fix in Android WebView (fix identified, not yet validated)
+
+
+bridge.py has been refactored with: dynamic ATSPx protocol selection via OBD_PROTOCOL_MAP, ATAT1 adaptive timing, _detect_supported_pids() at connect, RealDash-inspired PID detection and polling architecture
+Gear ratio calculator is parametric, stored in localStorage, with a dedicated calibration panel replacing hardcoded Zetec Rocam values
+CSS consolidated: style.css, style_addon.css, and style_fix_ajustes.css merged into a single file; .page-content 3-column conflict (breaking the Ajustes screen) resolved
+Runtime config updates from the Ajustes screen persist to `.env` through config.save_to_env() and are applied immediately to bridge state.
+
+Current workspace snapshot does not include Android/Capacitor build files such as vite.config.ts or android/settings.gradle; Android port status remains unverified here.
+
+
+On the horizon
+
+CAN batching + skipCount (per-channel poll frequency) — depends on confirming supported PIDs from real vehicle log output ([OBD] PIDs suportados:)
+Note: supported-PID discovery is implemented, but actual CAN batching/skipCount logic is not present in this code snapshot yet.
+BCM address discovery via FORScan communication logs
+Validate Android app.js 404 fix in a real WebView build
+
+
+Key learnings & principles
+
+Never cache config values at module import time — always read config.LED_REDLINE_RPM (and other config values) directly inside functions on each call; module-level caching means UI changes never apply until restart
+LED shift light must run in a fully decoupled async loop — tying it to OBD polling introduces variable serial latency that breaks strobe timing
+OBDLink EX baud rate is 115200, not 38400 — this distinction is critical and not reflected in the default .env.example or frontend default selection.
+PyInstaller compiled builds: os.path.dirname(__file__) points to sys._MEIPASS (temp extraction dir), not the .exe directory — use sys.executable for config persistence across sessions
+ATRV not PID 0142 for battery voltage on this adapter/vehicle combination
+IPC at 720/728 uses Ford legacy KWP, not UDS — UDS tooling will not work on this module
+RealDash serves as the ground-truth behavioral baseline for OBD correctness
+
+
+Approach & patterns
+
+Rangel works iteratively across multiple Claude sessions; he generates reference documents to seed context and maintain continuity without re-explaining the stack each time
+Bugs are diagnosed layered and sequentially — front-end crashes, then connection issues, then protocol mismatches
+Incremental implementation is preferred (e.g., adding PID detection before batching)
+Dev mode (python main.py) is used for iterative testing; PyInstaller recompile only for distribution
+
+
+Tools & resources
+
+RealDash — OBD behavior baseline and protocol confirmation source
+FORScan — CAN module analysis and BCM address discovery (pending)
+pyserial, asyncio, websockets — core Python stack
+Capacitor 7, Vite, @leeskies/capacitor-usb-serial — Android port stack
+JitPack — Gradle dependency source for USB serial plugin
