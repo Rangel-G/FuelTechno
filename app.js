@@ -216,8 +216,8 @@ function inicializarConfigOBD() {
     function loadTypeConfig(type) {
         const saved = allSaved[type] || {};
         addrInput.value = saved.serial_port || '';
-        if (baudSelect) baudSelect.value = String(saved.baud_rate || 38400);
-        if (protoSelect) protoSelect.value = saved.protocol || 'auto';
+        if (baudSelect) baudSelect.value = String(saved.baud_rate || 115200);
+        if (protoSelect) protoSelect.value = saved.protocol || 'can11-500';
         if (badge) badge.innerText = saved.serial_port || type.toUpperCase();
     }
 
@@ -230,7 +230,7 @@ function inicializarConfigOBD() {
     }
 
     // Restaura o último tipo usado (ou Bluetooth por padrão)
-    const lastType = localStorage.getItem('ft_config_obd_last_type') || 'bluetooth';
+    const lastType = localStorage.getItem('ft_config_obd_last_type') || 'usb';
     typeSelect.value = lastType;
     updatePlaceholder();
     loadTypeConfig(lastType);
