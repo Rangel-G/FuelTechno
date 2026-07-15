@@ -23,7 +23,7 @@ logging.basicConfig(level=log_level, format="%(asctime)s [%(levelname)s] %(messa
 led = LedController()
 
 led_auto_mode = True  # True = shift light automático por RPM
-led_manual_color = (255, 0, 0)  # última cor definida manualmente pelo usuário
+led_manual_color = (255, 150, 0)  # última cor definida manualmente pelo usuário
 
 # RPM mais recente lido do OBD-II — atualizado pelo telemetry_sender e lido
 # pelo loop dedicado do shift light (led_shift_light_loop), que roda
