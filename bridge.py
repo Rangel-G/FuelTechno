@@ -620,6 +620,9 @@ async def telemetry_sender(websocket, bridge, bridge_ready_holder):
             }
             await asyncio.sleep(0.5)
 
+        # Cor atual do shift light (mesma lógica que controla a fita física),
+        # única fonte de verdade — evita duplicar cálculo no frontend.
+        telemetry["led_color"] = list(rpm_to_shift_color(telemetry["rpm"]))
         # --- Shift light automático baseado no RPM ---
         # Atualiza o RPM mais recente para o loop dedicado do shift light
         # (led_shift_light_loop), que roda separado do polling do OBD-II.

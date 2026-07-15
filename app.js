@@ -21,14 +21,20 @@ const labels = {
     fuel: document.getElementById('lbl-fuel')
 };
 
+const MAP_SLUGS = {
+    'Diário': 'diario',
+    'Rua': 'rua',
+    'Pista': 'pista',
+    'Drift': 'drift',
+    'Sport': 'sport',
+};
+
 let currentActiveMapName = 'Diário';
 let tractionControlActive = true;
 let socket = null;
-const SCREEN_ALERT_RPM = 4000;
-// Estado local (espelha o que foi mandado pro bridge) dos controles de LED
+let currentRedlineRpm = 3000;
 let ledAutoMode = true;
 let ledManualColorHex = '#ff0000';
-// Estado local da conexão OBD-II (porta serial). Agora é manual:
 // só fica "true" depois que o usuário aperta "Ligar Conexão" e o
 // backend confirma que abriu a porta com sucesso.
 let obdConnected = false;
@@ -50,15 +56,11 @@ async function carregarPagina(nomePagina) {
     let arquivoParaCarregar = `pages/${nomePagina}.html`;
 
     if (nomePagina === 'painel') {
-        const mapaSlug = currentActiveMapName.toLowerCase()
-            .normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+        const mapaSlug = MAP_SLUGS[currentActiveMapName] || 'diario';
         arquivoParaCarregar = `pages/painel-${mapaSlug}.html`;
     }
 
     try {
-        // cache: 'no-store' evita que o navegador/WebView reaproveite uma
-        // versão antiga do HTML — esse fetch roda via JS a cada troca de
-        // aba, então sem isso o cache HTTP pode servir o arquivo velho.
         const resposta = await fetch(arquivoParaCarregar, { cache: 'no-store' });
         const html = await resposta.text();
         viewport.innerHTML = html;
@@ -96,11 +98,8 @@ function inicializarElementosDinamicos(pagina) {
     if (pagina === 'painel') {
         const painelGrid = document.getElementById('page-painel');
         if (painelGrid) {
-            // Remove qualquer classe que comece com 'layout-'
             painelGrid.classList.forEach(cls => cls.startsWith('layout-') && painelGrid.classList.remove(cls));
-
-            // Adiciona a classe baseada no nome (ex: 'Diário' -> 'diario')
-            const slug = currentActiveMapName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+            const slug = MAP_SLUGS[currentActiveMapName] || 'diario';
             painelGrid.classList.add(`layout-${slug}`);
         }
     }
@@ -115,8 +114,7 @@ function inicializarElementosDinamicos(pagina) {
 
             // Define o clique
             box.onclick = () => {
-                // Encontra qual é o nome do mapa baseado nas palavras-chave
-                const novoMapa = ['Rua', 'Pista', 'Drift'].find(m => title.includes(m)) || 'Diário';
+                const novoMapa = Object.keys(MAP_SLUGS).find(m => title.includes(m)) || 'Diário';
                 selectActiveMap(novoMapa);
             };
         });
@@ -143,6 +141,7 @@ function inicializarElementosDinamicos(pagina) {
                 const ratios = ratiosInput.value.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v) && v > 0);
                 if (ratios.length === 0) return;
                 gearConfig = { ratios, diff: parseFloat(diffInput.value) || gearConfig.diff, perimeter: parseFloat(perimInput.value) || gearConfig.perimeter };
+                currentRedlineRpm = config.redline_rpm;
                 localStorage.setItem('ft_config_gear', JSON.stringify(gearConfig));
                 if (badge) badge.innerText = `${ratios.length} marchas`;
                 btnSave.classList.add('saved');
@@ -360,7 +359,7 @@ function inicializarConfigLED() {
 
     // Salvar
     btnSave.onclick = () => {
-        const normalRgb = hexToRgb(colorNormal?.value || '#0000ff');
+        const normalRgb = hexToRgb(colorNormal?.value || '#0084ff');
         const redlineRgb = hexToRgb(colorRedline?.value || '#ff0000');
 
         const config = {
@@ -371,6 +370,7 @@ function inicializarConfigLED() {
             color_normal: [normalRgb.r, normalRgb.g, normalRgb.b],
             color_redline: [redlineRgb.r, redlineRgb.g, redlineRgb.b],
         };
+        currentRedlineRpm = config.redline_rpm;
         localStorage.setItem('ft_config_led', JSON.stringify(config));
 
         // Atualiza badge
@@ -458,17 +458,13 @@ function selectActiveMap(mapName) {
     });
 
     // Determina qual ficheiro HTML carregar com base no mapa selecionado
-    let paginaAlvo = 'painel'; // Padrão
-    if (mapName === 'Diário') paginaAlvo = 'painel-diario';
-    else if (mapName === 'Rua') paginaAlvo = 'painel-rua';
-    else if (mapName === 'Pista') paginaAlvo = 'painel-pista';
-    else if (mapName === 'Drift') paginaAlvo = 'painel-drift';
+    let paginaAlvo = 'painel-' + (MAP_SLUGS[mapName] || 'diario');
 
     // Carrega a página correta e aplica as classes de layout após a injeção do HTML
     carregarPagina(paginaAlvo).then(() => {
         const painelGrid = document.getElementById('page-painel');
         if (painelGrid) {
-            const slug = mapName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+            const slug = MAP_SLUGS[mapName] || 'diario';
             painelGrid.classList.add(`layout-${slug}`);
         }
     });
@@ -520,7 +516,7 @@ function safeSetStyleWidth(id, widthValue) {
     if (el) el.style.width = widthValue;
 }
 
-function renderEcuUI(rpm, speed, map, ect, fpress, fpress_avail, load, battery, fuel, milOn, dtcCount) {
+function renderEcuUI(rpm, speed, map, ect, fpress, fpress_avail, load, battery, fuel, milOn, dtcCount, ledColor) {
     const gear = calculateZetecRocamGear(rpm, speed);
 
     const values = {
@@ -585,6 +581,9 @@ function renderEcuUI(rpm, speed, map, ect, fpress, fpress_avail, load, battery, 
     // 2. Lógica Visual/Hardware (Barra RPM, Shift Light, Datalogger)
     updateVisuals(rpm, map, ect);
 
+    // 2b. Gauges do painel Sport (SVG needles + indicador de cor do LED)
+    updateGaugeVisuals(rpm, speed, undefined, ledColor);
+
     // 3. Sincronização com Bancada (Apenas se estiver no modo manual)
     syncManualControls(rpm, speed, map, ect, fpress, fpress_avail);
 }
@@ -592,22 +591,28 @@ function renderEcuUI(rpm, speed, map, ect, fpress, fpress_avail, load, battery, 
 // --- Funções auxiliares para manter o código limpo ---
 
 function updateVisuals(rpm, map, ect) {
-    // RPM digital (overlay numérico acima do conta-giros)
     safeSetText('overlay-rpm-val', rpm);
-
-    // RPM Barra
     const svgFill = document.getElementById('rpm-svg-fill');
     if (svgFill) svgFill.setAttribute('width', Math.min(1, Math.max(0, rpm / 8000)) * 1000);
 
-    // Shift Light e Alertas
-    const isOverLimit = rpm >= 4000;
+    const isOverLimit = rpm >= currentRedlineRpm; // ANTES: rpm >= SCREEN_ALERT_RPM
     const screenEl = document.getElementById('ecu-screen');
     if (screenEl) screenEl.classList.toggle('screen-alert-active', isOverLimit);
 
-    // Datalogger (Barras)
     safeSetStyleWidth('log-bar-rpm', `${(rpm / 8000) * 100}%`);
     safeSetStyleWidth('log-bar-map', `${Math.max(0, Math.min(100, ((map + 1) / 4) * 100))}%`);
     safeSetStyleWidth('log-bar-ect', `${(ect / 120) * 100}%`);
+}
+
+function updateGaugeVisuals(rpm, speed, turbo, ledColor) {
+    setGaugeNeedle('needle-rpm', rpm / currentRedlineRpm); // ANTES: config_redline_rpm || 6000
+    setGaugeNeedle('needle-speed', speed / 180);
+    if (typeof turbo === 'number') setGaugeNeedle('needle-turbo', turbo / 2.0);
+
+    const dot = document.getElementById('gauge-led-dot');
+    if (dot && ledColor) {
+        dot.style.background = `rgb(${ledColor[0]}, ${ledColor[1]}, ${ledColor[2]})`;
+    }
 }
 
 function syncManualControls(rpm, speed, map, ect, fpress, fpress_avail) {
@@ -634,8 +639,32 @@ function runManualLoop() {
             12.6,
             sliders.fuel ? parseInt(sliders.fuel.value) : 75,
             false,
-            0
+            0,
+            undefined
         );
+    }
+}
+
+/*
+    Novas funções para painel-Sport
+*/
+
+function setGaugeNeedle(id, fraction) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const frac = Math.max(0, Math.min(1, fraction));
+    const angle = -135 + (frac * 270);
+    el.setAttribute('transform', `rotate(${angle} 100 100)`);
+}
+
+function updateGaugeVisuals(rpm, speed, turbo, ledColor) {
+    setGaugeNeedle('needle-rpm', rpm / (config_redline_rpm || 6000));
+    setGaugeNeedle('needle-speed', speed / 180);
+    if (typeof turbo === 'number') setGaugeNeedle('needle-turbo', turbo / 2.0);
+
+    const dot = document.getElementById('gauge-led-dot');
+    if (dot && ledColor) {
+        dot.style.background = `rgb(${ledColor[0]}, ${ledColor[1]}, ${ledColor[2]})`;
     }
 }
 
@@ -651,6 +680,7 @@ function connectWebSocket() {
         wsStatusText.className = "connection-status connected";
         document.getElementById('ecu-mode').innerText = "Sinal OBD-II: ONLINE";
         document.getElementById('ecu-mode').className = "status-left";
+        sendLedCommand({ cmd: 'get_config' }); // NOVO: sincroniza redline e demais configs
     };
 
     socket.onmessage = (event) => {
@@ -664,11 +694,13 @@ function connectWebSocket() {
                 atualizarUiConexaoObd();
             }
 
+            if (data.cmd === 'current_config' && data.led?.redline_rpm) {
+                currentRedlineRpm = data.led.redline_rpm;
+            }
+
             if (data.cmd === 'ftdi_devices_result') {
                 preencherListaFtdi(data.devices);
             }
-            // 'current_config' e 'config_saved' já são tratados nos próprios
-            // handlers de clique/carregamento da tela de Ajustes.
             return;
         }
 
