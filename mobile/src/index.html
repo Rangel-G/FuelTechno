@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FuelTech FT450 - Telemetria OBD-II Live</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="workbench">
+
+    <div class="control-panel">
+      <div class="panel-title">
+        Bancada Manual
+        <label class="mode-toggle">
+          <input type="checkbox" id="chk-auto"> Manual Mode
+        </label>
+      </div>
+      <div class="control-group">
+        <label class="control-label">Rotação (RPM): <span id="lbl-rpm">0</span></label>
+        <input type="range" id="param-rpm" class="slider-input" min="0" max="8000" value="900" step="50">
+      </div>
+      <div class="control-group">
+        <label class="control-label">Velocidade (KM/H): <span id="lbl-speed">0</span></label>
+        <input type="range" id="param-speed" class="slider-input" min="0" max="160" value="0" step="1">
+      </div>
+      <div class="control-group">
+        <label class="control-label">Pressão MAP (BAR): <span id="lbl-map">0.00</span></label>
+        <input type="range" id="param-map" class="slider-input" min="-1.00" max="3.00" value="-0.55" step="0.05">
+      </div>
+      <div class="control-group">
+        <label class="control-label">Temp. Motor (°C): <span id="lbl-ect">0</span></label>
+        <input type="range" id="param-ect" class="slider-input" min="20" max="120" value="85" step="1">
+      </div>
+      <div class="control-group">
+        <label class="control-label">Pres. Comb. (BAR): <span id="lbl-fpress">0.00</span></label>
+        <input type="range" id="param-fpress" class="slider-input" min="0.00" max="8.00" value="4.20" step="0.05">
+      </div>
+      <div class="connection-status" id="ws-status">Desconectado do Bridge</div>
+    </div>
+
+    <div class="ecu-frame">
+      <div id="led-status-l" class="led-indicator led-left"></div>
+      <div id="led-status-r" class="led-indicator led-right"></div>
+      <div class="ecu-brand">FuelTech <span>FT450</span> SFI</div>
+
+      <div class="ecu-screen" id="ecu-screen">
+
+        <div class="rpm-ramp-container">
+          <div class="rpm-text-overlay">
+            <span id="overlay-rpm-val">0</span> <span class="rpm-unit-mini">RPM</span>
+          </div>
+          <svg viewBox="0 0 1000 100" preserveAspectRatio="none" style="width: 100%; height: 100%; display: block;">
+            <defs>
+              <linearGradient id="fuelTechRampGrad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1000" y2="0">
+                <stop offset="0%" stop-color="#00ff66" />
+                <stop offset="55%" stop-color="#00ff66" />
+                <stop offset="75%" stop-color="#ffcc00" />
+                <stop offset="100%" stop-color="#ff3b30" />
+              </linearGradient>
+              <clipPath id="rampShapeClip">
+                <path d="M 0,100 L 0,60 L 400,60 Q 650,60 1000,5 L 1000,100 Z" />
+              </clipPath>
+            </defs>
+            <path d="M 0,100 L 0,60 L 400,60 Q 650,60 1000,5 L 1000,100 Z" fill="#252528" />
+            <g clip-path="url(#rampShapeClip)">
+              <rect id="rpm-svg-fill" x="0" y="0" width="0" height="100" fill="url(#fuelTechRampGrad)" />
+            </g>
+          </svg>
+        </div>
+
+        <div class="rpm-scale">
+          <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>
+        </div>
+
+        <div class="top-status">
+          <div class="status-left" id="ecu-mode">Sinal OBD-II: Aguardando</div>
+          <div id="map-name">MAPA: DIÁRIO</div>
+          <div class="status-right" id="ecu-status-text">PROG: ATIVO</div>
+        </div>
+
+        <div class="dynamic-view-viewport" id="content-viewport">
+        </div>
+
+        <div class="bottom-nav">
+          <div class="nav-btn active" data-page="painel">Painel</div>
+          <div class="nav-btn" data-page="mapas">Mapas</div>
+          <div class="nav-btn" data-page="datalogger">Datalogger</div>
+          <div class="nav-btn" data-page="ajustes">Ajustes</div>
+        </div>
+      </div>
+
+      <div class="ecu-footer">FT450 SFI ENGINE MANAGEMENT SYSTEM</div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script type="module" src="./obd-serial.js"></script>
+</body>
+
+</html>

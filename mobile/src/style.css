@@ -1,0 +1,1093 @@
+:root {
+    --bg-main: #121214;
+    --cor-diario: #00ff66;
+    --cor-pista: #ff3b30;
+    --cor-borda: #282830;
+    --texto-padrao: #ffffff;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Courier New', Courier, monospace;
+    user-select: none;
+}
+
+/* ==========================================
+   ALTERADO: body agora ocupa 100% da tela,
+   sem padding/gap ao redor do app
+========================================== */
+body {
+    background-color: #0c0c0e;
+    color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* ==========================================
+   ALTERADO: workbench sem max-width e sem gap,
+   preenchendo 100% da viewport
+========================================== */
+.workbench {
+    display: flex;
+    gap: 0;
+    align-items: center;
+    justify-content: center;
+    max-width: none;
+    width: 100vw;
+    height: 100vh;
+}
+
+/* Painel de Controle Esquerdo (Bancada) */
+.control-panel {
+    background: linear-gradient(180deg, #18181c 0%, #111114 100%);
+    border: 2px solid #282830;
+    border-radius: 16px;
+    padding: 20px;
+    width: 300px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+    display: none;
+    /* ← Isso esconde a bancada, mas mantém o código invisível pro JS funcionar! */
+    flex-direction: column;
+    gap: 14px;
+    z-index: 20;
+}
+
+.panel-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffcc00;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-bottom: 1px solid #282830;
+    padding-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mode-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #222227;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    border: 1px solid #33333c;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.control-label {
+    font-size: 11px;
+    color: #aaa;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+}
+
+.control-label span {
+    color: #00fffa;
+}
+
+.slider-input {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    background: #2d2d35;
+    border-radius: 3px;
+    outline: none;
+}
+
+.slider-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #ffcc00;
+    cursor: pointer;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.slider-input:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.connection-status {
+    font-size: 11px;
+    text-align: center;
+    padding: 6px;
+    border-radius: 4px;
+    background: #221111;
+    color: #ff3b30;
+    font-weight: bold;
+}
+
+.connection-status.connected {
+    background: #112211;
+    color: #34c759;
+}
+
+/* ==========================================
+   ALTERADO: MOLDURA FÍSICA DA FT450
+   Agora ocupa 100vw x 100vh, sem bordas,
+   cantos ou sombra — a tela "é" a janela.
+========================================== */
+.ecu-frame {
+    background: var(--bg-main);
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    padding: 16px 24px;
+    box-shadow: none;
+    position: relative;
+    border: none;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.ecu-brand {
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 4px;
+    color: #d1d1d1;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+}
+
+.ecu-brand span {
+    color: #ff3b30;
+}
+
+/* ==========================================
+   ALTERADO: TELA DA ECU
+   Sem altura fixa (415px) — agora usa flex:1
+   para ocupar todo o espaço restante do frame
+========================================== */
+.ecu-screen {
+    background-color: #050505;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    border-radius: 8px;
+    border: 3px solid #111;
+    padding: 10px;
+    display: grid;
+    grid-template-rows: 90px 24px 28px 1fr 48px;
+    gap: 6px;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.9);
+    position: relative;
+    overflow: hidden;
+}
+
+.screen-alert-active {
+    animation: blinkScreenRed 0.15s infinite alternate;
+}
+
+@keyframes blinkScreenRed {
+    from {
+        background-color: #050505;
+    }
+
+    to {
+        background-color: #4a0505;
+    }
+}
+
+/* CONTA-GIROS */
+.rpm-ramp-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+}
+
+
+
+/* ALTERADO: fonte maior para acompanhar a tela cheia */
+.rpm-text-overlay {
+    position: absolute;
+    left: 60px;
+    top: 4px;
+    font-family: 'Arial Black', sans-serif;
+    font-weight: 900;
+    font-size: 64px;
+    color: #ffffff;
+    line-height: 1;
+    z-index: 8;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.overlay-rpm-val {
+    color: #ff0000;
+}
+
+.rpm-unit-mini {
+    font-family: 'Arial', sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+/* ALTERADO: fonte um pouco maior */
+.rpm-scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #aaa;
+    padding: 0 12px;
+    font-weight: bold;
+    align-items: center;
+}
+
+.top-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #111;
+    padding: 0 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    border: 1px solid #222;
+}
+
+.status-left {
+    color: #00ff66;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-left::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: #00ff66;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #00ff66;
+}
+
+.status-left.searching {
+    color: #ff9500;
+}
+
+.status-left.searching::before {
+    background-color: #ff9500;
+    box-shadow: 0 0 8px #ff9500;
+}
+
+/* VIEWPORT DINÂMICO */
+.dynamic-view-viewport {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* ==========================================
+   NOTA: existiam 3 definições conflitantes de
+   .page-content espalhadas pelo arquivo original
+   (uma delas forçava grid de 3 colunas com
+   padding fixo, cortando a tela de Ajustes).
+   Elas foram MESCLADAS em uma única definição
+   abaixo, mantendo o comportamento correto
+   (grid controlado pelas classes .layout-*).
+========================================== */
+.page-content {
+    width: 100%;
+    height: 100%;
+    display: none;
+    gap: 8px;
+}
+
+.page-content.active-page {
+    display: grid;
+}
+
+/* CONTAINER DOS BLOCOS DE CANAIS */
+.channel-box {
+    background: linear-gradient(180deg, #141416 0%, #0a0a0c 100%);
+    border: 1px solid #222226;
+    border-radius: 6px;
+    padding: 8px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.channel-label {
+    font-size: 10px;
+    color: #777;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ALTERADO: valores maiores para preencher a tela cheia */
+.channel-value {
+    font-size: 40px;
+    font-weight: bold;
+    text-align: right;
+    color: #ffffff;
+    line-height: 1.1;
+}
+
+.channel-unit {
+    font-size: 10px;
+    color: #555;
+    text-align: right;
+}
+
+/* LAYOUTS DINÂMICOS POR GRID MAPA */
+.layout-default {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.layout-default #box-speed {
+    grid-column: span 2;
+    background: linear-gradient(180deg, #151922 0%, #080b11 100%);
+    border-color: #2a3545;
+}
+
+.layout-default #box-speed .channel-value {
+    font-size: 64px;
+    color: #00fffa;
+}
+
+.layout-default #box-gear .channel-value {
+    color: #ffcc00;
+    text-align: center;
+    font-family: 'Arial Black', sans-serif;
+    font-size: 50px;
+}
+
+.layout-diario {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.layout-diario #box-speed {
+    grid-column: span 2;
+    background: linear-gradient(180deg, #151922 0%, #080b11 100%);
+    border-color: #2a3545;
+}
+
+.layout-diario #box-speed .channel-value {
+    font-size: 66px;
+    color: #00fffa;
+    text-align: right;
+}
+
+.layout-diario #box-gear .channel-value {
+    color: #ffcc00;
+    text-align: center;
+    font-family: 'Arial Black', sans-serif;
+    font-size: 52px;
+}
+
+.layout-rua {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.layout-rua #box-speed {
+    grid-column: span 2;
+    background: linear-gradient(180deg, #151922 0%, #080b11 100%);
+    border-color: #2a3545;
+}
+
+.layout-rua #box-speed .channel-value {
+    font-size: 64px;
+    color: #00fffa;
+}
+
+.layout-rua #box-gear .channel-value {
+    color: #ffcc00;
+    text-align: center;
+    font-family: 'Arial Black', sans-serif;
+    font-size: 50px;
+}
+
+.layout-rua #box-map,
+.layout-rua #box-fpress {
+    display: none !important;
+}
+
+#box-tc {
+    display: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.layout-rua #box-tc {
+    display: flex;
+}
+
+.tc-active {
+    background: linear-gradient(180deg, #0f2619 0%, #050d08 100%) !important;
+    border-color: #155734 !important;
+}
+
+.tc-active .tc-status-lbl {
+    color: #34c759;
+    font-weight: bold;
+    font-size: 30px;
+    text-align: center;
+    margin-bottom: 2px;
+}
+
+.tc-disabled {
+    background: linear-gradient(180deg, #2d1212 0%, #140707 100%) !important;
+    border-color: #721c24 !important;
+}
+
+.tc-disabled .tc-status-lbl {
+    color: #ff3b30;
+    font-weight: bold;
+    font-size: 30px;
+    text-align: center;
+    margin-bottom: 2px;
+}
+
+#box-power {
+    display: none;
+}
+
+.layout-rua #box-power {
+    display: flex;
+}
+
+.layout-rua #box-power .channel-value {
+    color: #ff9500;
+}
+
+.channel-box.highlight-ect-alert {
+    border-color: #ff3b30;
+    background: linear-gradient(180deg, #260a0a 0%, #0a0a0a 100%);
+}
+
+.channel-box.highlight-ect-alert .channel-value {
+    color: #ff453a;
+}
+
+/* MAPAS */
+.maps-view {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 8px;
+}
+
+.map-select-box {
+    background: linear-gradient(180deg, #16161c 0%, #0d0d12 100%);
+    border: 1px solid #2a2a35;
+    border-radius: 6px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    position: relative;
+}
+
+.map-select-box:hover {
+    border-color: #444455;
+    background: #1b1b22;
+}
+
+.map-select-box.map-active {
+    border-color: #ff3b30;
+    background: linear-gradient(180deg, #220d0d 0%, #0a0404 100%);
+    box-shadow: 0 0 10px rgba(255, 59, 48, 0.2);
+}
+
+.map-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.map-active .map-title {
+    color: #ff453a;
+}
+
+.map-desc {
+    font-size: 10px;
+    color: #777;
+    line-height: 1.3;
+}
+
+.map-tag {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 9px;
+    background-color: #252530;
+    color: #999;
+    padding: 2px 8px;
+    border-bottom-left-radius: 4px;
+    font-weight: bold;
+}
+
+.map-active .map-tag {
+    background-color: #ff3b30;
+    color: #fff;
+}
+
+/* DATALOGGER */
+.datalogger-view {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    background: #09090b;
+    padding: 14px;
+    border-radius: 6px;
+    border: 1px solid #1c1c22;
+}
+
+.log-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.log-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #888;
+}
+
+.log-bar-bg {
+    width: 100%;
+    height: 14px;
+    background: #141418;
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid #222;
+}
+
+.log-bar-fill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.1s ease;
+}
+
+/* AJUSTES (legado) */
+.settings-view {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 8px;
+}
+
+.setting-item {
+    background: #141418;
+    border: 1px solid #22222a;
+    border-radius: 6px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.setting-item:hover {
+    background: #1c1c24;
+    border-color: #333344;
+}
+
+.setting-icon {
+    width: 24px;
+    height: 24px;
+    background: #ff3b30;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 13px;
+}
+
+/* NAVEGAÇÃO */
+.bottom-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: center;
+    height: 100%;
+}
+
+.nav-btn {
+    flex: 1;
+    background: #18181b;
+    border: 1px solid #27272a;
+    color: #efefef;
+    height: 40px;
+    line-height: 38px;
+    font-size: 13px;
+    text-align: center;
+    border-radius: 6px;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.nav-btn.active {
+    background: #ff3b30;
+    border-color: #ff453a;
+    color: #ffffff;
+    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+/* LEDS LATERAIS */
+.led-indicator {
+    position: absolute;
+    top: 20px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #444;
+    transition: background-color 0.1s;
+}
+
+.led-left {
+    left: 15px;
+}
+
+.led-right {
+    right: 15px;
+}
+
+.led-active-green {
+    background-color: #34c759;
+    box-shadow: 0 0 12px #34c759;
+}
+
+.led-active-red {
+    background-color: #ff3b30;
+    box-shadow: 0 0 12px #ff3b30;
+    animation: blink 0.3s infinite;
+}
+
+@keyframes blink {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0.4;
+    }
+}
+
+.ecu-footer {
+    position: absolute;
+    bottom: 6px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 10px;
+    color: #555;
+    letter-spacing: 1px;
+}
+
+.channel-box-grande {
+    grid-column: span 2;
+}
+
+/* Classes de tamanho para os box-content */
+.box-pequena {
+    grid-column: span 1;
+}
+
+.box-media {
+    grid-column: span 2;
+}
+
+.box-grande {
+    grid-column: span 3;
+}
+
+/* ==========================================
+   LAYOUTS: PISTA E DRIFT
+   (mesclado com a definição única de
+   .page-content acima — sem duplicidade)
+========================================== */
+.layout-diario,
+.layout-rua,
+.layout-drift,
+.layout-pista {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.box-pressure {}
+
+/* ==========================================
+   AJUSTES V2 — PAINÉIS DE CONFIGURAÇÃO
+========================================== */
+
+/* Layout vertical para a tela de ajustes.
+   Usa #page-ajustes (ID + classe) para sempre
+   vencer qualquer outra regra de .page-content. */
+#page-ajustes.page-content {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 8px !important;
+    gap: 8px !important;
+    scrollbar-width: thin;
+    scrollbar-color: #333 #0a0a0c;
+}
+
+#page-ajustes.page-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+#page-ajustes.page-content::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 2px;
+}
+
+#page-ajustes.page-content::-webkit-scrollbar-track {
+    background: #0a0a0c;
+}
+
+#page-ajustes .config-panel {
+    flex-shrink: 0;
+    width: 100%;
+}
+
+#page-ajustes .settings-static-grid {
+    flex-shrink: 0;
+}
+
+.settings-view-new {
+    display: flex !important;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: #333 #0a0a0c;
+}
+
+.settings-view-new::-webkit-scrollbar {
+    width: 4px;
+}
+
+.settings-view-new::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 2px;
+}
+
+.settings-view-new::-webkit-scrollbar-track {
+    background: #0a0a0c;
+}
+
+/* Grid 2x2 para os itens estáticos no topo */
+.settings-static-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+/* Painel expansível */
+.config-panel {
+    background: linear-gradient(180deg, #141418 0%, #0c0c10 100%);
+    border: 1px solid #22222a;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+    transition: border-color 0.2s ease;
+}
+
+.config-panel.panel-open {
+    border-color: #ff3b30;
+}
+
+/* Header do painel (clicável) */
+.config-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 12px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.config-panel-header:hover {
+    background: #1a1a22;
+}
+
+.config-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #fff;
+}
+
+.config-panel-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.config-status {
+    font-size: 10px;
+    font-weight: bold;
+    background: #1c2a1c;
+    color: #34c759;
+    padding: 3px 9px;
+    border-radius: 3px;
+    letter-spacing: 0.5px;
+}
+
+.config-arrow {
+    font-size: 11px;
+    color: #666;
+    transition: transform 0.25s ease;
+}
+
+.panel-open .config-arrow {
+    transform: rotate(180deg);
+}
+
+/* Body do painel (expand/collapse) */
+.config-panel-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    padding: 0 12px;
+}
+
+.panel-open .config-panel-body {
+    max-height: 600px;
+    padding: 8px 12px 12px;
+    border-top: 1px solid #1e1e26;
+}
+
+/* Campos do formulário */
+.config-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.config-field label {
+    font-size: 10px;
+    color: #888;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.config-select,
+.config-input {
+    background: #0a0a0e;
+    border: 1px solid #2a2a34;
+    border-radius: 4px;
+    color: #fff;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    padding: 6px 10px;
+    outline: none;
+    transition: border-color 0.15s ease;
+}
+
+.config-select:focus,
+.config-input:focus {
+    border-color: #ff3b30;
+}
+
+.config-select option {
+    background: #121216;
+    color: #fff;
+}
+
+/* Layout de campos lado a lado */
+.config-field-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.config-field-half {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+/* Color picker customizado */
+.color-picker-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.color-picker-wrapper input[type="color"] {
+    -webkit-appearance: none;
+    width: 32px;
+    height: 24px;
+    border: 1px solid #333;
+    border-radius: 3px;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+}
+
+.color-picker-wrapper input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 1px;
+}
+
+.color-picker-wrapper input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 2px;
+}
+
+.color-label {
+    font-size: 11px;
+    color: #aaa;
+}
+
+/* Controles inline do LED (power) */
+.led-power-row {
+    align-items: center;
+    justify-content: space-between;
+}
+
+.led-btns-inline {
+    display: flex;
+    gap: 6px;
+}
+
+.led-btn {
+    background: #1a2e1a;
+    border: 1px solid #2a4a2a;
+    color: #34c759;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 5px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.led-btn:hover {
+    background: #254025;
+    border-color: #34c759;
+}
+
+.led-btn-off {
+    background: #2e1a1a;
+    border-color: #4a2a2a;
+    color: #ff3b30;
+}
+
+.led-btn-off:hover {
+    background: #402525;
+    border-color: #ff3b30;
+}
+
+.led-auto-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #18181e;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    border: 1px solid #2a2a34;
+    color: #aaa;
+    font-weight: bold;
+}
+
+/* Botão de salvar */
+.config-save-btn {
+    width: 100%;
+    padding: 8px;
+    background: linear-gradient(180deg, #ff4a3a 0%, #cc2e20 100%);
+    border: 1px solid #ff5a4a;
+    border-radius: 4px;
+    color: #fff;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.config-save-btn:hover {
+    background: linear-gradient(180deg, #ff6050 0%, #dd3e30 100%);
+    box-shadow: 0 0 12px rgba(255, 59, 48, 0.3);
+}
+
+.config-save-btn:active {
+    transform: scale(0.97);
+}
+
+.config-save-btn.saved {
+    background: linear-gradient(180deg, #34c759 0%, #28a745 100%);
+    border-color: #34c759;
+}
+
+.save-icon {
+    font-size: 13px;
+}
+
+/* Ícones dos painéis */
+.icon-obd {
+    background: #2a5fd8 !important;
+}
+
+.icon-led {
+    background: #ff9500 !important;
+}
+
+/* ==========================================
+   Badge de status "desconectado" para o
+   controle manual de conexão OBD-II
+   (movido de style_addon.css)
+========================================== */
+.config-status-off {
+    background: #2e1a1a;
+    color: #ff3b30;
+}

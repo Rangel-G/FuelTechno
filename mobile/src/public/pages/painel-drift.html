@@ -1,0 +1,31 @@
+<div id="page-painel" class="page-content layout-drift active-page" style="grid-template-columns: repeat(2, 1fr);">
+    <div class="channel-box box-pequena" id="box-rpm-drift">
+        <div class="channel-label">Giro Atual</div>
+        <div class="channel-value" id="val-rpm">0</div>
+        <div class="channel-unit">RPM</div>
+    </div>
+
+    <div class="channel-box box-pequena" id="box-rpm-max">
+        <div class="channel-label">Pico de Giro</div>
+        <div class="channel-value" id="val-rpm-max">0</div>
+        <div class="channel-unit">MAX RPM</div>
+    </div>
+
+    <div class="channel-box box-pequena" id="box-speed">
+        <div class="channel-label">Velocidade Roda</div>
+        <div class="channel-value" id="val-speed">0</div>
+        <div class="channel-unit">KM/H</div>
+    </div>
+
+    <div class="channel-box tc-disabled" id="box-tc">
+        <div class="channel-label">Controle de Tração</div>
+        <div class="tc-status-lbl" id="tc-status-text">DESATIVADO</div>
+        <div class="channel-unit">MODO SLIDE</div>
+    </div>
+
+    <div class="channel-box box-pequena" id="box-wheel-spin" style="grid-column: span 2;">
+        <div class="channel-label">Delta de Patinagem (Wheel Spin)</div>
+        <div class="channel-value" id="val-wheel-spin" style="color: #ff9500;">ESTÁVEL</div>
+        <div class="channel-unit">RPM vs VSS</div>
+    </div>
+</div>
