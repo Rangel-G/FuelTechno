@@ -1,7 +1,7 @@
 import asyncio
 import json
 import logging
-import os  # Importante para detectar o sistema operacional
+import os
 import serial
 import time
 
@@ -211,6 +211,13 @@ class FtdiD2xxAdapter:
                 break
         logging.info(f"[OBD] PIDs suportados: {sorted(self.supported_pids)}")
 
+    def reset_input_buffer(self):
+        if self._dev is not None and self.is_open:
+            try:
+                self._dev.purge()
+            except Exception:
+                pass
+
     def close(self):
         if self._dev is not None and self.is_open:
             try:
@@ -332,6 +339,13 @@ class ELM327Bridge:
                 break
         logging.info(f"[OBD] PIDs suportados: {sorted(self.supported_pids)}")
 
+    def _query_pid(self, pid: str, prefix: str, nbytes: int):
+        """Retorna lista de bytes ou None se PID não suportado/sem resposta."""
+        if self.supported_pids and pid not in self.supported_pids:
+            return None
+        res = self._send_cmd(f"01{pid}")
+        return self.parse_hex_response(res, f"41{prefix}", nbytes) or None
+
     def query_telemetry(self) -> dict:
         payload = {
             "rpm": 0,
@@ -346,79 +360,41 @@ class ELM327Bridge:
             "mil_on": False,
             "dtc_count": 0,
         }
-
         if not self.is_connected:
             return payload
 
-        # PID 010C - RPM (2 Bytes)
-        if not self.supported_pids or "0C" in self.supported_pids:
-            res_rpm = self._send_cmd("010C")
-            bytes_rpm = self.parse_hex_response(res_rpm, "410C", 2)
-            if bytes_rpm:
-                payload["rpm"] = int(((bytes_rpm[0] * 256) + bytes_rpm[1]) / 4)
+        if b := self._query_pid("0C", "0C", 2):
+            payload["rpm"] = int(((b[0] * 256) + b[1]) / 4)
 
-        # PID 010D - Velocidade VSS (1 Byte)
-        if not self.supported_pids or "0D" in self.supported_pids:
-            res_speed = self._send_cmd("010D")
-            bytes_speed = self.parse_hex_response(res_speed, "410D", 1)
-            if bytes_speed:
-                payload["speed"] = bytes_speed[0]
+        if b := self._query_pid("0D", "0D", 1):
+            payload["speed"] = b[0]
 
-        # PID 0105 - ECT Temperatura do Motor (1 Byte)
-        if not self.supported_pids or "05" in self.supported_pids:
-            res_ect = self._send_cmd("0105")
-            bytes_ect = self.parse_hex_response(res_ect, "4105", 1)
-            if bytes_ect:
-                payload["ect"] = bytes_ect[0] - 40
+        if b := self._query_pid("05", "05", 1):
+            payload["ect"] = b[0] - 40
 
-        # PID 010B - MAP Pressão Absoluta do Coletor (1 Byte em kPa)
-        if not self.supported_pids or "0B" in self.supported_pids:
-            res_map = self._send_cmd("010B")
-            bytes_map = self.parse_hex_response(res_map, "410B", 1)
-            if bytes_map:
-                kpa = bytes_map[0]
-                payload["map"] = (kpa / 100.0) - 1.0
+        if b := self._query_pid("0B", "0B", 1):
+            payload["map"] = (b[0] / 100.0) - 1.0
 
-        # PID 0104 - Carga Calculada do Motor (1 Byte)
-        if not self.supported_pids or "04" in self.supported_pids:
-            res_load = self._send_cmd("0104")
-            bytes_load = self.parse_hex_response(res_load, "4104", 1)
-            if bytes_load:
-                payload["load"] = int((bytes_load[0] * 100) / 255)
+        if b := self._query_pid("04", "04", 1):
+            payload["load"] = int((b[0] * 100) / 255)
 
-        # PID 010A - Pressão de Combustível
-        if not self.supported_pids or "0A" in self.supported_pids:
-            res_fp = self._send_cmd("010A")
-            bytes_fp = self.parse_hex_response(res_fp, "410A", 1)
-            if bytes_fp:
-                kpa_fp = bytes_fp[0] * 3
-                payload["fpress"] = kpa_fp / 100.0
-            payload["fpress_avail"] = True
-        else:
-            payload["fpress_avail"] = False
+        fp_supported = not self.supported_pids or "0A" in self.supported_pids
+        if b := self._query_pid("0A", "0A", 1):
+            payload["fpress"] = (b[0] * 3) / 100.0
+        payload["fpress_avail"] = fp_supported
 
-            # PID 0142 - Tensão do Módulo de Controle / Bateria (2 Bytes em mV)
-            res_volt = self._send_cmd("ATRV")
-            try:
-                payload["battery"] = float(res_volt.replace("V", "").strip())
-            except (ValueError, AttributeError):
-                pass
+        res_volt = self._send_cmd("ATRV")
+        try:
+            payload["battery"] = float(res_volt.replace("V", "").strip())
+        except (ValueError, AttributeError):
+            pass
 
-        # PID 0101 - Status de Monitoramento (MIL ligada + quantidade de DTCs, 4 Bytes)
-        if not self.supported_pids or "01" in self.supported_pids:
-            res_mon = self._send_cmd("0101")
-            bytes_mon = self.parse_hex_response(res_mon, "4101", 4)
-            if bytes_mon:
-                byte_a = bytes_mon[0]
-                payload["mil_on"] = bool(byte_a & 0x80)
-                payload["dtc_count"] = byte_a & 0x7F
+        if b := self._query_pid("01", "01", 4):
+            payload["mil_on"] = bool(b[0] & 0x80)
+            payload["dtc_count"] = b[0] & 0x7F
 
-        # PID 012F - Nível do Tanque de Combustível
-        if not self.supported_pids or "2F" in self.supported_pids:
-            res_fuel = self._send_cmd("012F")
-            bytes_fuel = self.parse_hex_response(res_fuel, "412F", 1)
-            if bytes_fuel:
-                payload["fuel"] = int((bytes_fuel[0] * 100) / 255)
+        if b := self._query_pid("2F", "2F", 1):
+            payload["fuel"] = int((b[0] * 100) / 255)
 
         return payload
 
