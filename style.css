@@ -189,7 +189,7 @@ body {
     border: 3px solid #111;
     padding: 10px;
     display: grid;
-    grid-template-rows: 90px 24px 28px 1fr 48px;
+    grid-template-rows: 90px 24px 28px minmax(0, 1fr) auto;
     gap: 6px;
     box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.9);
     position: relative;
@@ -299,28 +299,46 @@ body {
 /* VIEWPORT DINÂMICO */
 .dynamic-view-viewport {
     width: 100%;
+    min-height: 0;
     height: 100%;
-    overflow: hidden;
+    display: block;
+    overflow: auto;
+    align-self: stretch;
+    justify-self: stretch;
 }
 
-/* ==========================================
-   NOTA: existiam 3 definições conflitantes de
-   .page-content espalhadas pelo arquivo original
-   (uma delas forçava grid de 3 colunas com
-   padding fixo, cortando a tela de Ajustes).
-   Elas foram MESCLADAS em uma única definição
-   abaixo, mantendo o comportamento correto
-   (grid controlado pelas classes .layout-*).
-========================================== */
+.dynamic-view-viewport > .page-content {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    align-self: stretch;
+    justify-self: stretch;
+}
+
+.ecu-screen.sport-mode .dynamic-view-viewport {
+    height: 100%;
+    min-height: 0;
+}
+
 .page-content {
     width: 100%;
     height: 100%;
+    min-height: 0;
     display: none;
     gap: 8px;
 }
 
 .page-content.active-page {
     display: grid;
+    min-height: 0;
+}
+
+.page-content.panel-sport-v2.active-page {
+    display: block !important;
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
 }
 
 /* CONTAINER DOS BLOCOS DE CANAIS */
@@ -637,7 +655,11 @@ body {
     justify-content: space-between;
     gap: 8px;
     align-items: center;
-    height: 100%;
+    height: auto;
+    min-height: 48px;
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
 }
 
 .nav-btn {
@@ -703,9 +725,8 @@ body {
 }
 
 .ecu-footer {
-    position: absolute;
-    bottom: 6px;
-    left: 0;
+    position: relative;
+    margin-top: 12px;
     width: 100%;
     text-align: center;
     font-size: 10px;
@@ -1163,7 +1184,25 @@ body {
 }
 
 .ecu-screen.sport-mode {
-    grid-template-rows: 0px 0px 28px 1fr 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: stretch;
+    grid-template-rows: none;
+}
+
+.ecu-screen.sport-mode .top-status {
+    flex: 0 0 auto;
+}
+
+.ecu-screen.sport-mode .dynamic-view-viewport {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+}
+
+.ecu-screen.sport-mode .bottom-nav {
+    flex: 0 0 auto;
 }
 
 .ecu-screen.sport-mode .rpm-ramp-container,
@@ -1176,4 +1215,19 @@ body {
     font-size: 11px;
     font-family: 'Courier New', monospace;
     font-weight: bold;
+}
+
+.gauge-tick {
+    stroke: #666;
+    stroke-width: 2;
+}
+
+.gauge-ticks line {
+    stroke: #888;
+    stroke-width: 2;
+}
+
+.gauge-ticks text {
+    font-size: 10px;
+    fill: #999;
 }

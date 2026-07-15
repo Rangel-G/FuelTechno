@@ -21,6 +21,30 @@ const labels = {
     fuel: document.getElementById('lbl-fuel')
 };
 
+const uiComponents = {};
+
+function initializeUiComponents(root = document) {
+    root.querySelectorAll('[data-ui-component]').forEach(el => {
+        const key = el.dataset.uiComponent;
+        if (key) uiComponents[key] = el;
+    });
+}
+
+function setUiComponentVisible(name, visible) {
+    const el = uiComponents[name];
+    if (!el) return;
+    el.style.display = visible ? '' : 'none';
+}
+
+function toggleUiComponentsForMap(mapName) {
+    const isSport = mapName === 'Sport';
+    setUiComponentVisible('rpm-ramp', !isSport);
+    setUiComponentVisible('rpm-scale', !isSport);
+    setUiComponentVisible('rpm-control-group', !isSport);
+}
+
+initializeUiComponents();
+
 const MAP_SLUGS = {
     'Diário': 'diario',
     'Rua': 'rua',
@@ -65,6 +89,9 @@ async function carregarPagina(nomePagina) {
         const html = await resposta.text();
         viewport.innerHTML = html;
         inicializarElementosDinamicos(nomePagina);
+        if (nomePagina.startsWith('painel')) {
+            toggleUiComponentsForMap(currentActiveMapName);
+        }
     } catch (e) {
         console.error("Erro ao carregar:", e);
     }
@@ -95,7 +122,7 @@ document.querySelectorAll('.bottom-nav .nav-btn').forEach(botao => {
 // Associa os cliques de elementos que são injetados dinamicamente
 function inicializarElementosDinamicos(pagina) {
     // 1. Lógica do Painel
-    if (pagina === 'painel') {
+    if (pagina.startsWith('painel')) {
         const painelGrid = document.getElementById('page-painel');
         if (painelGrid) {
             painelGrid.classList.forEach(cls => cls.startsWith('layout-') && painelGrid.classList.remove(cls));
@@ -216,8 +243,8 @@ function inicializarConfigOBD() {
     function loadTypeConfig(type) {
         const saved = allSaved[type] || {};
         addrInput.value = saved.serial_port || '';
-        if (baudSelect) baudSelect.value = String(saved.baud_rate || 115200);
-        if (protoSelect) protoSelect.value = saved.protocol || 'can11-500';
+        if (baudSelect) baudSelect.value = saved.baud_rate !== undefined ? String(saved.baud_rate) : baudSelect.value;
+        if (protoSelect) protoSelect.value = saved.protocol !== undefined ? saved.protocol : protoSelect.value;
         if (badge) badge.innerText = saved.serial_port || type.toUpperCase();
     }
 
@@ -229,8 +256,8 @@ function inicializarConfigOBD() {
         if (baudField) baudField.style.display = hints.baudVisible ? '' : 'none';
     }
 
-    // Restaura o último tipo usado (ou Bluetooth por padrão)
-    const lastType = localStorage.getItem('ft_config_obd_last_type') || 'usb';
+    // Restaura o último tipo usado ou preserva a seleção do HTML quando não há config salva
+    const lastType = localStorage.getItem('ft_config_obd_last_type') || typeSelect.value;
     typeSelect.value = lastType;
     updatePlaceholder();
     loadTypeConfig(lastType);
@@ -246,7 +273,7 @@ function inicializarConfigOBD() {
         const config = {
             connection_type: type,
             serial_port: addrInput.value || addrInput.placeholder,
-            baud_rate: baudSelect ? parseInt(baudSelect.value) : 38400,
+            baud_rate: baudSelect ? parseInt(baudSelect.value) : 115200,
             protocol: protoSelect ? protoSelect.value : 'auto',
         };
         allSaved[type] = config;
@@ -443,11 +470,15 @@ function toggleTractionControl() {
     }
 }
 
+function toggleRpmSliderForMap(mapName) {
+    toggleUiComponentsForMap(mapName);
+}
+
 // Adicione esta função globalmente (pode colocar logo abaixo da função toggleTractionControl)
 function selectActiveMap(mapName) {
     currentActiveMapName = mapName;
     updateTopMapLabel();
-    //document.getElementById('ecu-screen')?.classList.toggle('sport-mode', mapName === 'Sport');
+    document.getElementById('ecu-screen')?.classList.toggle('sport-mode', mapName === 'Sport');
 
     // Feedback visual nos cards de seleção
     const mapBoxes = document.querySelectorAll('.map-select-box');
@@ -469,6 +500,7 @@ function selectActiveMap(mapName) {
             const slug = MAP_SLUGS[mapName] || 'diario';
             painelGrid.classList.add(`layout-${slug}`);
         }
+        toggleRpmSliderForMap(mapName);
     });
 
     // Atualiza o menu inferior para acender o botão "Painel"
@@ -526,6 +558,7 @@ function renderEcuUI(rpm, speed, map, ect, fpress, fpress_avail, load, battery, 
         'val-speed': speed,
         'val-gear': gear,
         'val-map': map.toFixed(2),
+        'val-turbo': map.toFixed(2),
         'val-ect': ect,
         'val-power': `${load}%`,
         'val-fpress': fpress_avail ? fpress.toFixed(2) : "N/D",
@@ -584,7 +617,7 @@ function renderEcuUI(rpm, speed, map, ect, fpress, fpress_avail, load, battery, 
     updateVisuals(rpm, map, ect);
 
     // 2b. Gauges do painel Sport (SVG needles + indicador de cor do LED)
-    updateGaugeVisuals(rpm, speed, undefined, ledColor);
+    updateGaugeVisuals(rpm, speed, map, ledColor);
 
     // 3. Sincronização com Bancada (Apenas se estiver no modo manual)
     syncManualControls(rpm, speed, map, ect, fpress, fpress_avail);
@@ -604,17 +637,6 @@ function updateVisuals(rpm, map, ect) {
     safeSetStyleWidth('log-bar-rpm', `${(rpm / 8000) * 100}%`);
     safeSetStyleWidth('log-bar-map', `${Math.max(0, Math.min(100, ((map + 1) / 4) * 100))}%`);
     safeSetStyleWidth('log-bar-ect', `${(ect / 120) * 100}%`);
-}
-
-function updateGaugeVisuals(rpm, speed, turbo, ledColor) {
-    setGaugeNeedle('needle-rpm', rpm / currentRedlineRpm); // ANTES: config_redline_rpm || 6000
-    setGaugeNeedle('needle-speed', speed / 180);
-    if (typeof turbo === 'number') setGaugeNeedle('needle-turbo', turbo / 2.0);
-
-    const dot = document.getElementById('gauge-led-dot');
-    if (dot && ledColor) {
-        dot.style.background = `rgb(${ledColor[0]}, ${ledColor[1]}, ${ledColor[2]})`;
-    }
 }
 
 function syncManualControls(rpm, speed, map, ect, fpress, fpress_avail) {
@@ -655,18 +677,20 @@ function setGaugeNeedle(id, fraction) {
     const el = document.getElementById(id);
     if (!el) return;
     const frac = Math.max(0, Math.min(1, fraction));
-    const angle = -135 + (frac * 270);
-    el.setAttribute('transform', `rotate(${angle} 100 100)`);
+    const angle = -90 + (frac * 180);
+    el.setAttribute('transform', `rotate(${angle} 200 200)`);
 }
 
 function updateGaugeVisuals(rpm, speed, turbo, ledColor) {
-    setGaugeNeedle('needle-rpm', rpm / (config_redline_rpm || 6000));
+    setGaugeNeedle('needle-rpm', rpm / 8000);
     setGaugeNeedle('needle-speed', speed / 180);
-    if (typeof turbo === 'number') setGaugeNeedle('needle-turbo', turbo / 2.0);
+    if (typeof turbo === 'number') setGaugeNeedle('needle-turbo', turbo / 1.0);
 
-    const dot = document.getElementById('gauge-led-dot');
-    if (dot && ledColor) {
-        dot.style.background = `rgb(${ledColor[0]}, ${ledColor[1]}, ${ledColor[2]})`;
+    if (ledColor) {
+        document.querySelectorAll('.gauge-led-indicator').forEach(dot => {
+            dot.style.background = `rgb(${ledColor[0]}, ${ledColor[1]}, ${ledColor[2]})`;
+            dot.style.boxShadow = `0 0 16px rgba(${ledColor[0]}, ${ledColor[1]}, ${ledColor[2]}, 0.8)`;
+        });
     }
 }
 

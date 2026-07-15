@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FuelTech FT450 - Telemetria OBD-II Live</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="pages/painel-sport.css">
 </head>
 
 <body>
@@ -18,7 +19,7 @@
                     <input type="checkbox" id="chk-auto"> Manual Mode
                 </label>
             </div>
-            <div class="control-group">
+            <div class="control-group" data-ui-component="rpm-control-group">
                 <label class="control-label">Rotação (RPM): <span id="lbl-rpm">0</span></label>
                 <input type="range" id="param-rpm" class="slider-input" min="0" max="8000" value="900" step="50">
             </div>
@@ -50,7 +51,7 @@
 
             <div class="ecu-screen" id="ecu-screen">
 
-                <div class="rpm-ramp-container">
+                <div class="rpm-ramp-container" data-ui-component="rpm-ramp">
                     <div class="rpm-text-overlay">
                         <span id="overlay-rpm-val">0</span> <span class="rpm-unit-mini">RPM</span>
                     </div>
@@ -75,7 +76,7 @@
                     </svg>
                 </div>
 
-                <div class="rpm-scale">
+                <div class="rpm-scale" data-ui-component="rpm-scale">
                     <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>
                 </div>
 

@@ -1,48 +1,129 @@
-<div id="page-painel" class="page-content layout-gauge active-page">
-    <div class="gauge-box gauge-rpm">
-        <svg viewBox="0 0 200 200" class="gauge-svg">
-            <circle cx="100" cy="100" r="90" class="gauge-bg" />
-            <path d="M 30 155 A 90 90 0 1 1 170 155" class="gauge-arc" />
-            <g id="needle-rpm" class="gauge-needle-group" transform="rotate(-135 100 100)">
-                <line x1="100" y1="100" x2="100" y2="25" class="gauge-needle" />
-            </g>
-            <circle cx="100" cy="100" r="8" class="gauge-hub" />
-            <text x="20" y="178" class="gauge-scale-text">0</text>
-            <text x="180" y="178" text-anchor="end" class="gauge-scale-text" id="gauge-max-rpm">8000</text>
-        </svg>
-        <div class="gauge-label">RPM</div>
-        <div class="gauge-value" id="val-rpm">0</div>
-    </div>
+<div id="page-painel" class="page-content panel-sport-v2 active-page">
+    <div class="dashboard">
+        <div class="gauge-card" style="--gauge-bg-image: url('assets/gauge-bg-rpm.png');">
+            <svg viewBox="0 0 400 400" class="gauge-svg" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                    <linearGradient id="gauge-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.95" />
+                        <stop offset="100%" stop-color="#ff0055" stop-opacity="0.95" />
+                    </linearGradient>
+                </defs>
+                <circle cx="200" cy="200" r="180" class="gauge-shell" />
+                <path d="M 60 200 A 140 140 0 0 1 340 200" class="gauge-arc" stroke="url(#gauge-glow)" />
+                <g class="gauge-ticks">
+                    <g transform="rotate(-90 200 200)">
+                        <line x1="200" y1="50" x2="200" y2="70" class="gauge-tick gauge-major-tick" />
+                        <text x="200" y="84" class="tick-text">0</text>
+                    </g>
+                    <g transform="rotate(-45 200 200)">
+                        <line x1="200" y1="50" x2="200" y2="63" class="gauge-tick" />
+                        <text x="200" y="84" class="tick-text">2</text>
+                    </g>
+                    <g transform="rotate(0 200 200)">
+                        <line x1="200" y1="50" x2="200" y2="70" class="gauge-tick gauge-major-tick" />
+                        <text x="200" y="84" class="tick-text">4</text>
+                    </g>
+                    <g transform="rotate(45 200 200)">
+                        <line x1="200" y1="50" x2="200" y2="63" class="gauge-tick" />
+                        <text x="200" y="84" class="tick-text">6</text>
+                    </g>
+                    <g transform="rotate(90 200 200)">
+                        <line x1="200" y1="50" x2="200" y2="70" class="gauge-tick gauge-major-tick" />
+                        <text x="200" y="84" class="tick-text red">8</text>
+                    </g>
+                </g>
+                <g id="needle-rpm" transform="rotate(-90 200 200)">
+                    <line x1="200" y1="200" x2="200" y2="60" class="gauge-needle" />
+                </g>
+                <circle cx="200" cy="200" r="18" class="gauge-hub" />
+                <circle cx="200" cy="200" r="24" class="gauge-center-ring" />
+            </svg>
+            <div class="digital-box">
+                <div class="digital-rpm" id="digital-rpm">0000</div>
+            </div>
+            <div class="gauge-footer">
+                <div class="gauge-label">RPM</div>
+                <div class="gauge-value" id="val-rpm">0</div>
+            </div>
+            <div class="gauge-led-indicator" id="gauge-led-dot-rpm" title="Shift Light"></div>
+        </div>
 
-    <div class="gauge-box gauge-speed">
-        <svg viewBox="0 0 200 200" class="gauge-svg">
-            <circle cx="100" cy="100" r="90" class="gauge-bg" />
-            <path d="M 30 155 A 90 90 0 1 1 170 155" class="gauge-arc" />
-            <g id="needle-speed" class="gauge-needle-group" transform="rotate(-135 100 100)">
-                <line x1="100" y1="100" x2="100" y2="25" class="gauge-needle" />
-            </g>
-            <circle cx="100" cy="100" r="8" class="gauge-hub" />
-            <text x="20" y="178" class="gauge-scale-text">0</text>
-            <text x="180" y="178" text-anchor="end" class="gauge-scale-text">180</text>
-        </svg>
-        <div class="gauge-label">KM/H</div>
-        <div class="gauge-value" id="val-speed">0</div>
-    </div>
+        <div class="gauge-card gauge-card--center" style="--gauge-bg-image: url('assets/gauge-bg-speed.png');">
+            <svg viewBox="0 0 400 400" class="gauge-svg" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                    <linearGradient id="gauge-glow-speed" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.95" />
+                        <stop offset="100%" stop-color="#ffda00" stop-opacity="0.95" />
+                    </linearGradient>
+                </defs>
+                <circle cx="200" cy="200" r="180" class="gauge-shell" />
+                <path d="M 60 200 A 140 140 0 0 1 340 200" class="gauge-arc" stroke="url(#gauge-glow-speed)" />
+                <g class="gauge-ticks">
+                    <g transform="rotate(-90 200 200)">
+                        <line x1="200" y1="50" x2="200" y2="70" class="gauge-tick gauge-major-tick" />
+                        <text x="200" y="84" class="tick-text">0</text>
+                    </g>
+                    <g transform="rotate(-30 200 200)">
+                        <line x1="200" y1="50" x2="200" y2="63" class="gauge-tick" />
+                        <text x="200" y="84" class="tick-text">60</text>
+                    </g>
+                    <g transform="rotate(30 200 200)">
+                        <line x1="200" y1="50" x2="200" y2="63" class="gauge-tick" />
+                        <text x="200" y="84" class="tick-text">120</text>
+                    </g>
+                    <g transform="rotate(90 200 200)">
+                        <line x1="200" y1="50" x2="200" y2="70" class="gauge-tick gauge-major-tick" />
+                        <text x="200" y="84" class="tick-text">180</text>
+                    </g>
+                </g>
+                <g id="needle-speed" transform="rotate(-90 200 200)">
+                    <line x1="200" y1="200" x2="200" y2="60" class="gauge-needle" />
+                </g>
+                <circle cx="200" cy="200" r="18" class="gauge-hub" />
+                <circle cx="200" cy="200" r="24" class="gauge-center-ring" />
+            </svg>
+            <div class="gauge-footer">
+                <div class="gauge-label">KM/H</div>
+                <div class="gauge-value" id="val-speed">0</div>
+            </div>
+            <div class="gauge-led-indicator" id="gauge-led-dot-speed" title="Shift Light"></div>
+        </div>
 
-    <div class="gauge-box gauge-turbo">
-        <svg viewBox="0 0 200 200" class="gauge-svg">
-            <circle cx="100" cy="100" r="90" class="gauge-bg" />
-            <path d="M 30 155 A 90 90 0 1 1 170 155" class="gauge-arc" />
-            <g id="needle-turbo" class="gauge-needle-group" transform="rotate(-135 100 100)">
-                <line x1="100" y1="100" x2="100" y2="25" class="gauge-needle" />
-            </g>
-            <circle cx="100" cy="100" r="8" class="gauge-hub" />
-            <text x="20" y="178" class="gauge-scale-text">0</text>
-            <text x="180" y="178" text-anchor="end" class="gauge-scale-text">1.0</text>
-        </svg>
-        <div class="gauge-label">TURBO BAR</div>
-        <div class="gauge-value" id="val-turbo">N/D</div>
+        <div class="gauge-card" style="--gauge-bg-image: url('assets/gauge-bg-turbo.png');">
+            <svg viewBox="0 0 400 400" class="gauge-svg" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                    <linearGradient id="gauge-glow-turbo" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.95" />
+                        <stop offset="100%" stop-color="#ffda00" stop-opacity="0.95" />
+                    </linearGradient>
+                </defs>
+                <circle cx="200" cy="200" r="180" class="gauge-shell" />
+                <path d="M 60 200 A 140 140 0 0 1 340 200" class="gauge-arc" stroke="url(#gauge-glow-turbo)" />
+                <g class="gauge-ticks">
+                    <g transform="rotate(-90 200 200)">
+                        <line x1="200" y1="50" x2="200" y2="70" class="gauge-tick gauge-major-tick" />
+                        <text x="200" y="84" class="tick-text">0</text>
+                    </g>
+                    <g transform="rotate(0 200 200)">
+                        <line x1="200" y1="50" x2="200" y2="70" class="gauge-tick gauge-major-tick" />
+                        <text x="200" y="84" class="tick-text">0.5</text>
+                    </g>
+                    <g transform="rotate(90 200 200)">
+                        <line x1="200" y1="50" x2="200" y2="70" class="gauge-tick gauge-major-tick" />
+                        <text x="200" y="84" class="tick-text">1.0</text>
+                    </g>
+                </g>
+                <g id="needle-turbo" transform="rotate(-90 200 200)">
+                    <line x1="200" y1="200" x2="200" y2="60" class="gauge-needle" />
+                </g>
+                <circle cx="200" cy="200" r="18" class="gauge-hub" />
+                <circle cx="200" cy="200" r="24" class="gauge-center-ring" />
+            </svg>
+            <div class="gauge-footer">
+                <div class="gauge-label">TURBO BAR</div>
+                <div class="gauge-value" id="val-turbo">N/D</div>
+            </div>
+            <div class="gauge-led-indicator" id="gauge-led-dot-turbo" title="Shift Light"></div>
+        </div>
     </div>
-
-    <div class="gauge-led-indicator" id="gauge-led-dot" title="Status Shift Light"></div>
 </div>

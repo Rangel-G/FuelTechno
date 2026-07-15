@@ -80,9 +80,9 @@ else:
     SERIAL_PORT = "/dev/rfcomm0" if os.name == "posix" else "COM4"
 
 try:
-    BAUD_RATE = int(os.getenv("BAUD_RATE", "38400"))
+    BAUD_RATE = int(os.getenv("BAUD_RATE", "115200"))
 except ValueError:
-    BAUD_RATE = 38400
+    BAUD_RATE = 115200
 
 # --- WebSocket Server Configurations ---
 WS_HOST = os.getenv("WS_HOST", "127.0.0.1")
