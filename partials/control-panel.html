@@ -1,0 +1,31 @@
+        <div class="control-panel">
+            <div class="panel-title">
+                Bancada Manual
+                <label class="mode-toggle">
+                    <input type="checkbox" id="chk-auto"> Manual Mode
+                </label>
+            </div>
+            <div class="control-group" data-ui-component="rpm-control-group">
+                <label class="control-label">Rotação (RPM): <span id="lbl-rpm">0</span></label>
+                <input type="range" id="param-rpm" class="slider-input" min="0" max="8000" value="900" step="50">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Velocidade (KM/H): <span id="lbl-speed">0</span></label>
+                <input type="range" id="param-speed" class="slider-input" min="0" max="160" value="0" step="1">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Pressão MAP (BAR): <span id="lbl-map">0.00</span></label>
+                <input type="range" id="param-map" class="slider-input" min="-1.00" max="3.00" value="-0.55"
+                    step="0.05">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Temp. Motor (°C): <span id="lbl-ect">0</span></label>
+                <input type="range" id="param-ect" class="slider-input" min="20" max="120" value="85" step="1">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Pres. Comb. (BAR): <span id="lbl-fpress">0.00</span></label>
+                <input type="range" id="param-fpress" class="slider-input" min="0.00" max="8.00" value="4.20"
+                    step="0.05">
+            </div>
+            <div class="connection-status" id="ws-status">Desconectado do Bridge</div>
+        </div>

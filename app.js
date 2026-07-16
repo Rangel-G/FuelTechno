@@ -551,7 +551,7 @@ function safeSetStyleWidth(id, widthValue) {
 }
 
 function renderEcuUI(rpm, speed, map, ect, fpress, fpress_avail, load, battery, fuel, milOn, dtcCount, ledColor) {
-    const gear = calculateZetecRocamGear(rpm, speed);
+    const gear = calculateGear(rpm, speed);
 
     const values = {
         'val-rpm': rpm,
