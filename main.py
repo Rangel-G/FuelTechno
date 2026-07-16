@@ -27,13 +27,15 @@ import logging
 
 import webview
 
-import bridge  # reaproveita toda a lógica existente do bridge.py
+import bridge
+import firestore_client  # reaproveita toda a lógica existente do bridge.py
+
+HTTP_PORT = 8000
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
 )
-
-HTTP_PORT = 8000
+firestore_client.init()
 
 
 def resource_path(relative_path: str) -> str:

@@ -4,7 +4,8 @@ import logging
 import os
 import serial
 import time
-import sys
+import sys  # adicionar ao bloco de imports
+import firestore_client
 
 from serial.tools import list_ports
 from led_controller import LedController
@@ -40,9 +41,6 @@ LED_REDLINE_RPM = config.LED_REDLINE_RPM  # a partir daqui a fita vira vermelha
 
 # Intervalo do "pisca" do shift light quando o RPM atinge o redline (segundos)
 LED_BLINK_INTERVAL = 0.15  # 150ms aceso / 150ms apagado (~3.3 piscadas/seg)
-
-
-import sys  # adicionar ao bloco de imports
 
 
 def _get_base_dir():
@@ -538,6 +536,8 @@ async def command_listener(websocket, bridge, bridge_ready_holder):
         elif cmd == "get_config":
             device_id = data.get("device_id")
             profile = load_device_config(device_id) if device_id else {}
+            if not profile and device_id:
+                profile = firestore_client.load_config(device_id)
             if "obd" in profile:
                 o = profile["obd"]
                 config.OBD_CONNECTION_TYPE = o.get(
@@ -611,6 +611,15 @@ async def command_listener(websocket, bridge, bridge_ready_holder):
                             "ftdi_serial": ftdi_serial,
                         },
                     )
+                    firestore_client.save_config_async(
+                        device_id,
+                        "obd_config",
+                        {
+                            "connection_type": conn_type,
+                            "baud_rate": int(baud_rate),
+                            "protocol": protocol,
+                        },
+                    )
                     await websocket.send(
                         json.dumps(
                             {"cmd": "config_saved", "section": "obd", "ok": True}
@@ -665,6 +674,16 @@ async def command_listener(websocket, bridge, bridge_ready_holder):
                             "color_redline": list(color_redline),
                         },
                     )
+                    firestore_client.save_config_async(
+                        device_id,
+                        "led_config",
+                        {
+                            "redline_rpm": int(redline_rpm),
+                            "blink_interval_ms": int(blink_ms),
+                            "color_normal": list(color_normal),
+                            "color_redline": list(color_redline),
+                        },
+                    )
                 logging.info(
                     f"[CONFIG] LED atualizado: nome={device_name}, redline={redline_rpm}, blink={blink_ms}ms"
                 )
@@ -674,6 +693,15 @@ async def command_listener(websocket, bridge, bridge_ready_holder):
                     save_device_config(
                         device_id,
                         "gear",
+                        {
+                            "ratios": data.get("ratios"),
+                            "diff": data.get("diff"),
+                            "perimeter": data.get("perimeter"),
+                        },
+                    )
+                    firestore_client.save_config_async(
+                        device_id,
+                        "gear_config",
                         {
                             "ratios": data.get("ratios"),
                             "diff": data.get("diff"),
