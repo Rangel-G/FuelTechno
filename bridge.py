@@ -85,15 +85,6 @@ def load_device_config(device_id: str) -> dict:
     return {}
 
 
-def save_device_config(device_id: str, updates: dict):
-    os.makedirs(DEVICE_CONFIG_DIR, exist_ok=True)
-    path = os.path.join(DEVICE_CONFIG_DIR, f"{device_id}.json")
-    data = load_device_config(device_id)
-    data.update(updates)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f)
-
-
 def rpm_to_shift_color(rpm: int):
     """
     Calcula a cor do shift light com base no RPM atual.
@@ -537,7 +528,17 @@ async def command_listener(websocket, bridge, bridge_ready_holder):
             device_id = data.get("device_id")
             profile = load_device_config(device_id) if device_id else {}
             if not profile and device_id:
-                profile = firestore_client.load_config(device_id)
+                fs_profile = firestore_client.load_config(device_id)
+                key_map = (
+                    ("obd", "obd_config"),
+                    ("led", "led_config"),
+                    ("gear", "gear_config"),
+                )
+                profile = {
+                    local_key: fs_profile[fs_key]
+                    for local_key, fs_key in key_map
+                    if fs_key in fs_profile
+                }
             if "obd" in profile:
                 o = profile["obd"]
                 config.OBD_CONNECTION_TYPE = o.get(
@@ -719,20 +720,6 @@ async def command_listener(websocket, bridge, bridge_ready_holder):
                 # Confirma pro frontend que a configuração foi salva
                 await websocket.send(
                     json.dumps({"cmd": "config_saved", "section": section, "ok": True})
-                )
-        elif cmd == "update_config" and data.get("section") == "gear":
-            device_id = data.get("device_id")
-            if device_id:
-                save_device_config(
-                    device_id,
-                    {
-                        "ratios": data.get("ratios"),
-                        "diff": data.get("diff"),
-                        "perimeter": data.get("perimeter"),
-                    },
-                )
-                await websocket.send(
-                    json.dumps({"cmd": "config_saved", "section": "gear", "ok": True})
                 )
 
 
