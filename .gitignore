@@ -5,3 +5,4 @@ __pycache__/
 .env
 device_configs/
 serviceAccountKey.json
+webview_data/

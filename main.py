@@ -48,6 +48,21 @@ def resource_path(relative_path: str) -> str:
     return os.path.join(base_path, relative_path)
 
 
+def _persistent_base_dir() -> str:
+    """
+    Diretório estável ao lado do .exe (ou do main.py em dev). Diferente de
+    resource_path(), NUNCA aponta pra sys._MEIPASS — essa pasta temporária
+    é apagada a cada execução, o que apagaria o perfil do WebView2 (e o
+    device_id salvo em localStorage) toda vez que o app fechasse.
+    """
+    if getattr(sys, "frozen", False):
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(os.path.abspath(__file__))
+
+
+WEBVIEW_STORAGE_PATH = os.path.join(_persistent_base_dir(), "webview_data")
+
+
 def start_static_server():
     """Sobe um servidor HTTP simples servindo os arquivos do frontend."""
     frontend_dir = resource_path(".")
@@ -90,7 +105,11 @@ def main():
     )
     # webview.start() bloqueia a thread principal até a janela ser fechada,
     # exatamente como se fosse um app desktop nativo.
-    webview.start()
+    # private_mode=False + storage_path fixo: sem isso, o pywebview abre em
+    # modo anônimo por padrão e o localStorage (incluindo o device_id do
+    # app.js) é descartado a cada fechamento, gerando um novo "usuário" no
+    # Firestore a cada execução.
+    webview.start(private_mode=False, storage_path=WEBVIEW_STORAGE_PATH)
 
 
 if __name__ == "__main__":
