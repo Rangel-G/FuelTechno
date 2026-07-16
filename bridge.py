@@ -104,6 +104,45 @@ def resolve_ftdi_port(serial_number: str):
     return None
 
 
+def _detect_supported_pids(send_cmd_fn) -> set:
+    """
+    Pergunta 0100/0120/0140 pra descobrir quais PIDs a ECU realmente
+    suporta. Recebe a função de envio de comando (_send_cmd) de quem
+    chamar, pra funcionar igual em ELM327Bridge e FtdiD2xxAdapter.
+    """
+    supported = set()
+    blocks = [("0100", 0x00), ("0120", 0x20), ("0140", 0x40)]
+    for query_pid, base in blocks:
+        res = send_cmd_fn(query_pid)
+        expected = "41" + query_pid[2:]
+        data = parse_hex_response(res, expected, 4)
+        if not data:
+            break
+        bitmask = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3]
+        for i in range(32):
+            if bitmask & (1 << (31 - i)):
+                supported.add(f"{base + i + 1:02X}")
+        if not (bitmask & 0x01):
+            break
+    logging.info(f"[OBD] PIDs suportados: {sorted(supported)}")
+    return supported
+
+
+def parse_hex_response(response: str, expected_prefix: str, bytes_needed: int) -> list:
+    if any(err in response for err in ["NODATA", "ERROR", "?", "SEARCHING"]):
+        return []
+    if expected_prefix in response:
+        data_part = response.split(expected_prefix)[-1]
+        if len(data_part) >= bytes_needed * 2:
+            try:
+                return [
+                    int(data_part[i : i + 2], 16) for i in range(0, bytes_needed * 2, 2)
+                ]
+            except ValueError:
+                return []
+    return []
+
+
 def list_ftdi_d2xx_devices():
     """
     Lista os adaptadores FTDI usando o driver D2XX diretamente — o mesmo
@@ -189,28 +228,6 @@ class FtdiD2xxAdapter:
                 time.sleep(0.01)
         return buf
 
-    def _detect_supported_pids(self):
-        """
-        Pergunta 0100/0120/0140 pra descobrir quais PIDs a ECU realmente
-        suporta, antes de começar o polling — evita ficar perguntando por
-        sensores que o carro não tem em todo frame.
-        """
-        self.supported_pids = set()
-        blocks = [("0100", 0x00), ("0120", 0x20), ("0140", 0x40)]
-        for query_pid, base in blocks:
-            res = self._send_cmd(query_pid)
-            expected = "41" + query_pid[2:]
-            data = self.parse_hex_response(res, expected, 4)
-            if not data:
-                break
-            bitmask = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3]
-            for i in range(32):
-                if bitmask & (1 << (31 - i)):
-                    self.supported_pids.add(f"{base + i + 1:02X}")
-            if not (bitmask & 0x01):
-                break
-        logging.info(f"[OBD] PIDs suportados: {sorted(self.supported_pids)}")
-
     def reset_input_buffer(self):
         if self._dev is not None and self.is_open:
             try:
@@ -236,15 +253,21 @@ class ELM327Bridge:
         self.baudrate = baudrate
         self.ser = None
         self.is_connected = False
-        # Modo D2XX (FTDI direto, tipo FORScan): quando ativo, ignora
-        # 'port' e conecta pelo número de série guardado em ftdi_serial.
         self.use_ftdi_d2xx = False
         self.ftdi_serial = ""
 
     def connect(self):
         try:
             if self.use_ftdi_d2xx:
-                ...
+                logging.info(f"Conectando via FTDI D2XX, S/N {self.ftdi_serial}...")
+                self.ser = FtdiD2xxAdapter(self.ftdi_serial, self.baudrate, timeout=2.0)
+                self.is_connected = True
+                logging.info(
+                    "Conexão FTDI D2XX estabelecida. Inicializando protocolo AT..."
+                )
+                self._init_elm()
+                self.supported_pids = _detect_supported_pids(self._send_cmd)
+                return True
             else:
                 logging.info(f"Conectando ao ELM327 na porta {self.port}...")
                 self.ser = serial.Serial(self.port, self.baudrate, timeout=2.0)
@@ -255,7 +278,7 @@ class ELM327Bridge:
                 self.is_connected = True
                 logging.info("Conexão estabelecida. Inicializando protocolo AT...")
                 self._init_elm()
-                self._detect_supported_pids()
+                self.supported_pids = _detect_supported_pids(self._send_cmd)
                 return True
         except Exception as e:
             logging.error(f"Falha ao abrir conexão: {e}")
@@ -296,55 +319,12 @@ class ELM327Bridge:
         logging.info("Aguardando sincronismo com a ECU do veículo...")
         time.sleep(1)
 
-    def parse_hex_response(
-        self, response: str, expected_prefix: str, bytes_needed: int
-    ) -> list:
-        """Filtra e extrai os bytes úteis da string de resposta hexadecimal."""
-        # Se houver erros comuns do protocolo OBD
-        if any(err in response for err in ["NODATA", "ERROR", "?", "SEARCHING"]):
-            return []
-
-        # O ELM responde com o modo alterado (Ex: Solicitação 010C responde 410C...)
-        if expected_prefix in response:
-            data_part = response.split(expected_prefix)[-1]
-            if len(data_part) >= bytes_needed * 2:
-                try:
-                    return [
-                        int(data_part[i : i + 2], 16)
-                        for i in range(0, bytes_needed * 2, 2)
-                    ]
-                except ValueError:
-                    return []
-        return []
-
-    def _detect_supported_pids(self):
-        """
-        Pergunta 0100/0120/0140 pra descobrir quais PIDs a ECU realmente
-        suporta, antes de começar o polling — evita ficar perguntando por
-        sensores que o carro não tem em todo frame.
-        """
-        self.supported_pids = set()
-        blocks = [("0100", 0x00), ("0120", 0x20), ("0140", 0x40)]
-        for query_pid, base in blocks:
-            res = self._send_cmd(query_pid)
-            expected = "41" + query_pid[2:]
-            data = self.parse_hex_response(res, expected, 4)
-            if not data:
-                break
-            bitmask = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3]
-            for i in range(32):
-                if bitmask & (1 << (31 - i)):
-                    self.supported_pids.add(f"{base + i + 1:02X}")
-            if not (bitmask & 0x01):
-                break
-        logging.info(f"[OBD] PIDs suportados: {sorted(self.supported_pids)}")
-
     def _query_pid(self, pid: str, prefix: str, nbytes: int):
         """Retorna lista de bytes ou None se PID não suportado/sem resposta."""
         if self.supported_pids and pid not in self.supported_pids:
             return None
         res = self._send_cmd(f"01{pid}")
-        return self.parse_hex_response(res, f"41{prefix}", nbytes) or None
+        return parse_hex_response(res, f"41{prefix}", nbytes) or None
 
     def query_telemetry(self) -> dict:
         payload = {

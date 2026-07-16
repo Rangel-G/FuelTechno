@@ -168,7 +168,7 @@ function inicializarElementosDinamicos(pagina) {
                 const ratios = ratiosInput.value.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v) && v > 0);
                 if (ratios.length === 0) return;
                 gearConfig = { ratios, diff: parseFloat(diffInput.value) || gearConfig.diff, perimeter: parseFloat(perimInput.value) || gearConfig.perimeter };
-                currentRedlineRpm = config.redline_rpm;
+                cgearConfig = { ratios, diff: parseFloat(diffInput.value) || gearConfig.diff, perimeter: parseFloat(perimInput.value) || gearConfig.perimeter };
                 localStorage.setItem('ft_config_gear', JSON.stringify(gearConfig));
                 if (badge) badge.innerText = `${ratios.length} marchas`;
                 btnSave.classList.add('saved');
