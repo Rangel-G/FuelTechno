@@ -65,6 +65,12 @@ let obdConnected = false;
 let gearConfig = JSON.parse(localStorage.getItem('ft_config_gear') || 'null')
     || { ratios: [3.58, 1.93, 1.41, 1.11, 0.88], diff: 4.25, perimeter: 1.83 };
 
+const deviceId = localStorage.getItem('ft_device_id') || (() => {
+    const id = crypto.randomUUID();
+    localStorage.setItem('ft_device_id', id);
+    return id;
+})();
+
 chkManualMode.onchange = () => toggleInputsState();
 
 function toggleInputsState() {
@@ -170,6 +176,7 @@ function inicializarElementosDinamicos(pagina) {
                 gearConfig = { ratios, diff: parseFloat(diffInput.value) || gearConfig.diff, perimeter: parseFloat(perimInput.value) || gearConfig.perimeter };
                 cgearConfig = { ratios, diff: parseFloat(diffInput.value) || gearConfig.diff, perimeter: parseFloat(perimInput.value) || gearConfig.perimeter };
                 localStorage.setItem('ft_config_gear', JSON.stringify(gearConfig));
+                sendLedCommand({ cmd: 'update_config', section: 'gear', device_id: deviceId, ...gearConfig });
                 if (badge) badge.innerText = `${ratios.length} marchas`;
                 btnSave.classList.add('saved');
                 btnSave.innerHTML = '<span class="save-icon">✓</span> Salvo!';
@@ -281,7 +288,7 @@ function inicializarConfigOBD() {
         localStorage.setItem('ft_config_obd_last_type', type);
 
         if (badge) badge.innerText = config.serial_port;
-        sendLedCommand({ cmd: 'update_config', section: 'obd', ...config });
+        sendLedCommand({ cmd: 'update_config', section: 'obd', device_id: deviceId, ...config });
 
         btnSave.classList.add('saved');
         btnSave.innerHTML = '<span class="save-icon">✓</span> Salvo!';
@@ -343,6 +350,12 @@ function rgbToHex(r, g, b) {
 }
 
 function inicializarConfigLED() {
+    const deviceId = localStorage.getItem('ft_device_id') || (() => {
+        const id = crypto.randomUUID();
+        localStorage.setItem('ft_device_id', id);
+        return id;
+    })();
+
     const nameInput = document.getElementById('cfg-led-name');
     const uuidInput = document.getElementById('cfg-led-uuid');
     const redlineInput = document.getElementById('cfg-led-redline');
@@ -405,7 +418,7 @@ function inicializarConfigLED() {
         if (badge) badge.innerText = config.device_name.substring(0, 10);
 
         // Envia pro backend
-        sendLedCommand({ cmd: 'update_config', section: 'led', ...config });
+        sendLedCommand({ cmd: 'update_config', section: 'led', device_id: deviceId, ...config });
 
         // Feedback visual
         btnSave.classList.add('saved');
@@ -713,7 +726,7 @@ function connectWebSocket() {
         wsStatusText.className = "connection-status connected";
         document.getElementById('ecu-mode').innerText = "Sinal OBD-II: ONLINE";
         document.getElementById('ecu-mode').className = "status-left";
-        sendLedCommand({ cmd: 'get_config' }); // NOVO: sincroniza redline e demais configs
+        sendLedCommand({ cmd: 'get_config', device_id: deviceId }); // sincroniza redline e demais configs, agora por UID
     };
 
     socket.onmessage = (event) => {

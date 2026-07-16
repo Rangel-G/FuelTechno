@@ -4,6 +4,7 @@ import logging
 import os
 import serial
 import time
+import sys
 
 from serial.tools import list_ports
 from led_controller import LedController
@@ -17,9 +18,12 @@ WS_PORT = config.WS_PORT
 log_level = getattr(logging, config.LOG_LEVEL, logging.INFO)
 logging.basicConfig(level=log_level, format="%(asctime)s [%(levelname)s] %(message)s")
 
+DEVICE_CONFIG_DIR = os.path.join(os.path.dirname(__file__), "device_configs")
+
 # ==========================================
 # ESTADO E CONFIGURAÇÃO DA FITA LED
 # ==========================================
+
 led = LedController()
 
 led_auto_mode = True  # True = shift light automático por RPM
@@ -36,6 +40,60 @@ LED_REDLINE_RPM = config.LED_REDLINE_RPM  # a partir daqui a fita vira vermelha
 
 # Intervalo do "pisca" do shift light quando o RPM atinge o redline (segundos)
 LED_BLINK_INTERVAL = 0.15  # 150ms aceso / 150ms apagado (~3.3 piscadas/seg)
+
+
+import sys  # adicionar ao bloco de imports
+
+
+def _get_base_dir():
+    if getattr(sys, "frozen", False):
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(os.path.abspath(__file__))
+
+
+DEVICE_CONFIG_DIR = os.path.join(_get_base_dir(), "device_configs")
+
+
+def load_device_config(device_id: str) -> dict:
+    if not device_id:
+        return {}
+    path = os.path.join(DEVICE_CONFIG_DIR, f"{device_id}.json")
+    if os.path.exists(path):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, OSError):
+            logging.warning(f"[DEVICE] Falha ao ler perfil {device_id}, ignorando.")
+    return {}
+
+
+def save_device_config(device_id: str, section: str, values: dict):
+    if not device_id:
+        return
+    os.makedirs(DEVICE_CONFIG_DIR, exist_ok=True)
+    path = os.path.join(DEVICE_CONFIG_DIR, f"{device_id}.json")
+    profile = load_device_config(device_id)
+    profile[section] = values
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(profile, f)
+    logging.info(f"[DEVICE] Perfil {device_id} atualizado: seção={section}")
+
+
+def load_device_config(device_id: str) -> dict:
+    path = os.path.join(DEVICE_CONFIG_DIR, f"{device_id}.json")
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+
+def save_device_config(device_id: str, updates: dict):
+    os.makedirs(DEVICE_CONFIG_DIR, exist_ok=True)
+    path = os.path.join(DEVICE_CONFIG_DIR, f"{device_id}.json")
+    data = load_device_config(device_id)
+    data.update(updates)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f)
 
 
 def rpm_to_shift_color(rpm: int):
@@ -478,6 +536,26 @@ async def command_listener(websocket, bridge, bridge_ready_holder):
             )
 
         elif cmd == "get_config":
+            device_id = data.get("device_id")
+            profile = load_device_config(device_id) if device_id else {}
+            if "obd" in profile:
+                o = profile["obd"]
+                config.OBD_CONNECTION_TYPE = o.get(
+                    "connection_type", config.OBD_CONNECTION_TYPE
+                )
+                config.SERIAL_PORT = o.get("serial_port", config.SERIAL_PORT)
+                config.BAUD_RATE = o.get("baud_rate", config.BAUD_RATE)
+                config.OBD_PROTOCOL = o.get("protocol", config.OBD_PROTOCOL)
+                config.OBD_FTDI_SERIAL = o.get("ftdi_serial", config.OBD_FTDI_SERIAL)
+                bridge.port, bridge.baudrate = config.SERIAL_PORT, config.BAUD_RATE
+            if "led" in profile:
+                l = profile["led"]
+                config.LED_COLOR_NORMAL = tuple(
+                    l.get("color_normal", config.LED_COLOR_NORMAL)
+                )
+                config.LED_COLOR_REDLINE = tuple(
+                    l.get("color_redline", config.LED_COLOR_REDLINE)
+                )
             # Envia a configuração atual para o frontend
             current_config = {
                 "cmd": "current_config",
@@ -496,6 +574,7 @@ async def command_listener(websocket, bridge, bridge_ready_holder):
                     "color_normal": list(config.LED_COLOR_NORMAL),
                     "color_redline": list(config.LED_COLOR_REDLINE),
                 },
+                "gear": profile.get("gear"),
             }
             await websocket.send(json.dumps(current_config))
 
@@ -519,13 +598,33 @@ async def command_listener(websocket, bridge, bridge_ready_holder):
                 bridge.port = serial_port
                 bridge.baudrate = int(baud_rate)
 
-                env_updates = {
-                    "OBD_CONNECTION_TYPE": conn_type,
-                    "SERIAL_PORT": serial_port,
-                    "BAUD_RATE": baud_rate,
-                    "OBD_PROTOCOL": protocol,
-                    "OBD_FTDI_SERIAL": ftdi_serial,
-                }
+                device_id = data.get("device_id")
+                if device_id:
+                    save_device_config(
+                        device_id,
+                        "obd",
+                        {
+                            "connection_type": conn_type,
+                            "serial_port": serial_port,
+                            "baud_rate": int(baud_rate),
+                            "protocol": protocol,
+                            "ftdi_serial": ftdi_serial,
+                        },
+                    )
+                    await websocket.send(
+                        json.dumps(
+                            {"cmd": "config_saved", "section": "obd", "ok": True}
+                        )
+                    )
+                else:
+                    env_updates = {
+                        "OBD_CONNECTION_TYPE": conn_type,
+                        "SERIAL_PORT": serial_port,
+                        "BAUD_RATE": baud_rate,
+                        "OBD_PROTOCOL": protocol,
+                        "OBD_FTDI_SERIAL": ftdi_serial,
+                    }
+
                 logging.info(
                     f"[CONFIG] OBD atualizado: tipo={conn_type}, porta={serial_port}, "
                     f"baud={baud_rate}, proto={protocol}, ftdi_serial={ftdi_serial}"
@@ -555,18 +654,57 @@ async def command_listener(websocket, bridge, bridge_ready_holder):
                     "LED_CHAR_UUID": char_uuid,
                     "LED_REDLINE_RPM": redline_rpm,
                     "LED_BLINK_INTERVAL_MS": blink_ms,
-                    "LED_COLOR_NORMAL": ",".join(str(c) for c in color_normal),
-                    "LED_COLOR_REDLINE": ",".join(str(c) for c in color_redline),
                 }
+                device_id = data.get("device_id")
+                if device_id:
+                    save_device_config(
+                        device_id,
+                        "led",
+                        {
+                            "color_normal": list(color_normal),
+                            "color_redline": list(color_redline),
+                        },
+                    )
                 logging.info(
                     f"[CONFIG] LED atualizado: nome={device_name}, redline={redline_rpm}, blink={blink_ms}ms"
                 )
+            elif section == "gear":
+                device_id = data.get("device_id")
+                if device_id:
+                    save_device_config(
+                        device_id,
+                        "gear",
+                        {
+                            "ratios": data.get("ratios"),
+                            "diff": data.get("diff"),
+                            "perimeter": data.get("perimeter"),
+                        },
+                    )
+                    await websocket.send(
+                        json.dumps(
+                            {"cmd": "config_saved", "section": "gear", "ok": True}
+                        )
+                    )
 
             if env_updates:
                 config.save_to_env(env_updates)
                 # Confirma pro frontend que a configuração foi salva
                 await websocket.send(
                     json.dumps({"cmd": "config_saved", "section": section, "ok": True})
+                )
+        elif cmd == "update_config" and data.get("section") == "gear":
+            device_id = data.get("device_id")
+            if device_id:
+                save_device_config(
+                    device_id,
+                    {
+                        "ratios": data.get("ratios"),
+                        "diff": data.get("diff"),
+                        "perimeter": data.get("perimeter"),
+                    },
+                )
+                await websocket.send(
+                    json.dumps({"cmd": "config_saved", "section": "gear", "ok": True})
                 )
 
 
