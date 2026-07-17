@@ -26,8 +26,10 @@
 .panel-sport-v2 .dashboard {
     width: 100%;
     max-width: 1160px;
+    height: 100%;
     display: grid;
-    grid-template-columns: 1fr 1.4fr 1fr;
+    grid-template-columns: 1.7fr 1fr;
+    grid-template-rows: 1fr;
     gap: 16px;
     align-items: stretch;
     justify-items: stretch;
@@ -38,48 +40,42 @@
 .panel-sport-v2 .gauge-card {
     position: relative;
     overflow: hidden;
-    border-radius: 28px;
-    background: rgba(2, 8, 18, 0.95);
-    border: 1px solid rgba(0, 255, 255, 0.12);
-    box-shadow: inset 0 0 50px rgba(0, 255, 255, 0.08), 0 0 40px rgba(0, 255, 255, 0.10);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 18px;
+    padding: 0;
+    min-height: 0;
 }
 
 .panel-sport-v2 .gauge-card--center {
-    grid-column: 2;
-    min-height: 460px;
+    min-height: 260px;
 }
 
 .panel-sport-v2 .gauge-card--side {
-    min-height: 420px;
+    min-height: 220px;
 }
 
-.panel-sport-v2 .gauge-card::before {
-    content: "";
-    position: absolute;
-    inset: 8% 6%;
-    border-radius: 50%;
-    background-image: var(--gauge-bg-image);
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover;
-    opacity: 0.24;
-    filter: blur(1px);
-    pointer-events: none;
-    z-index: 0;
-    clip-path: circle(48% at 50% 50%);
+.panel-sport-v2 .gauge-visual {
+    position: relative;
+    width: 380px;
+    height: 380px;
+    max-width: 100%;
+    max-height: 100%;
+    margin: 0 auto;
+}
+
+.panel-sport-v2 .gauge-card--side .gauge-visual {
+    width: 190px;
+    height: 190px;
 }
 
 .panel-sport-v2 .gauge-svg {
     width: 100%;
-    max-width: 100%;
-    height: auto;
+    height: 100%;
     display: block;
     z-index: 1;
+    filter: drop-shadow(0 0 22px rgba(0, 240, 255, 0.45));
 }
 
 .panel-sport-v2 .sport-center-display {
@@ -248,10 +244,45 @@
     text-transform: uppercase;
 }
 
-.panel-sport-v2 .gauge-card--center {
-    grid-column: 2;
-    align-self: center;
-    max-width: 100%;
+/* Painel digital do novo Manômetro (gear + velocidade), posicionado sobre o SVG
+   conforme o layout original do design (offset à direita, não centralizado). */
+.gauge-digital-panel {
+    position: absolute;
+    top: 57%;
+    right: 13%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.gauge-gear-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.shift-light-triangle {
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 30px solid #ffffff;
+    opacity: 0.1;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.shift-light-triangle.shift-light-triangle--active {
+    opacity: 1;
+    animation: shiftLightBlink 0.1s infinite;
+}
+
+@keyframes shiftLightBlink {
+    0%, 100% { opacity: 1; filter: drop-shadow(0 0 10px #ffffff); }
+    50% { opacity: 0.2; filter: none; }
 }
 
 @media (max-width: 940px) {
@@ -262,35 +293,6 @@
     .panel-sport-v2 .gauge-card--center {
         grid-column: auto;
     }
-}
-
-.panel-sport-v2 .gauge-svg {
-    width: 100%;
-    height: auto;
-    display: block;
-}
-
-.panel-sport-v2 .gauge-card {
-    position: relative;
-    overflow: hidden;
-    border-radius: 28px;
-    background: radial-gradient(circle at top, rgba(0, 255, 255, 0.08), rgba(6, 10, 18, 0.98));
-    border: 1px solid rgba(0, 255, 255, 0.12);
-    box-shadow: inset 0 0 30px rgba(0, 255, 255, 0.04), 0 0 30px rgba(0, 255, 255, 0.08);
-}
-
-.panel-sport-v2 .gauge-card::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image: var(--gauge-bg-image);
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover;
-    opacity: 0.12;
-    filter: blur(0.9px);
-    pointer-events: none;
-    z-index: 0;
 }
 
 .panel-sport-v2 .gauge-svg,
@@ -304,15 +306,6 @@
 .panel-sport-v2 .gauge-svg image {
     opacity: 0.0;
     visibility: hidden;
-}
-
-.panel-sport-v2 .gauge-card::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 45%);
-    pointer-events: none;
-    z-index: 1;
 }
 
 .panel-sport-v2 .gauge-shell {
@@ -406,6 +399,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 12px 14px 14px;
+    flex-shrink: 0;
 }
 
 .panel-sport-v2 .gauge-label {
