@@ -204,48 +204,7 @@
     z-index: 3;
 }
 
-.sport-gear {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 56px;
-    color: #ffffff;
-    letter-spacing: 0.32em;
-    text-shadow: 0 0 24px rgba(255, 255, 255, 0.2);
-    margin-bottom: 8px;
-}
-
-.sport-speed {
-    margin-top: 4px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.sport-speed #val-speed {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 96px;
-    color: #ffffff;
-    letter-spacing: -0.06em;
-    text-shadow: 0 0 30px rgba(255, 255, 255, 0.18);
-}
-
-.sport-speed-unit {
-    display: block;
-    margin-top: 6px;
-    font-size: 16px;
-    color: rgba(255, 255, 255, 0.76);
-    letter-spacing: 0.3em;
-}
-
-.sport-caption {
-    margin-top: 16px;
-    color: #79e8ff;
-    font-size: 14px;
-    letter-spacing: 0.35em;
-    text-transform: uppercase;
-}
-
-/* Painel digital do novo Manômetro (gear + velocidade), posicionado sobre o SVG
-   conforme o layout original do design (offset à direita, não centralizado). */
+/* Painel digital do Manômetro — replicado exatamente do Manometro.jsx */
 .gauge-digital-panel {
     position: absolute;
     top: 57%;
@@ -254,6 +213,8 @@
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+    color: #ffffff;
+    text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.5);
     z-index: 2;
     pointer-events: none;
 }
@@ -280,9 +241,44 @@
     animation: shiftLightBlink 0.1s infinite;
 }
 
-@keyframes shiftLightBlink {
-    0%, 100% { opacity: 1; filter: drop-shadow(0 0 10px #ffffff); }
-    50% { opacity: 0.2; filter: none; }
+.sport-gear {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 3rem;
+    font-weight: 500;
+    font-style: italic;
+    color: #ffffff;
+    letter-spacing: 0.32em;
+    text-shadow: 0 0 24px rgba(255, 255, 255, 0.2);
+    margin-bottom: 0;
+}
+
+.sport-speed {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-top: 0;
+}
+
+.sport-speed #val-speed {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 4.5rem;
+    font-weight: 500;
+    font-style: italic;
+    color: #ffffff;
+    letter-spacing: -0.06em;
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.18);
+    line-height: 1;
+    margin: 0;
+}
+
+.sport-speed-unit {
+    display: block;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    color: #cccccc;
+    letter-spacing: 2px;
+    margin-top: 2px;
+    padding-right: 5px;
 }
 
 @media (max-width: 940px) {
