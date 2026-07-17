@@ -1,8 +1,8 @@
 ﻿<div id="page-painel" class="page-content panel-sport-v2 active-page">
     <div class="dashboard">
-        <div class="gauge-card gauge-card--center">
-            <div class="gauge-visual">
-                <svg viewBox="0 0 105.83 105.83" class="gauge-svg" preserveAspectRatio="xMidYMid meet">
+        <div class="gauge-card gauge-card--side">
+            <div class="gauge-visual" style="position: relative;">
+                <svg viewBox="0 0 50 50" class="gauge-svg" preserveAspectRatio="xMidYMid meet">
                     <defs>
                         <filter id="filter208" x="-.3" y="-.24" width="1.6" height="1.48"
                             color-interpolation-filters="sRGB">
@@ -132,22 +132,33 @@
                         <circle cx="52.917" cy="52.917" r="52.917" fill="none" stroke="#000" stroke-width="2.6458" />
                     </g>
                 </svg>
-                <div class="gauge-digital-panel">
-                    <div class="gauge-gear-row">
-                        <div class="shift-light-triangle" id="shift-light-triangle"></div>
-                        <div class="sport-gear" id="val-gear">N</div>
+            
+
+                <div class="digitalPanel">
+                    <div class="gearRow">
+                        <div class="shiftLightTriangle" 
+                            style=" opacity: rpm > 5000 ? 1 : 0.1, 
+                    animation: rpm > 7000 ? 'freneticBlink 0.1s infinite' : 'none' "
+                        ></div>
+                        <div class="gearText">8</div>
                     </div>
-                    <div class="sport-speed">
-                        <span id="val-speed">000</span>
-                        <span class="sport-speed-unit">KM/H</span>
-                    </div>
+
+                    <div class="speedText">390</div>
+                    <div class="kmhText">KM/H</div>
                 </div>
-                <div class="gauge-led-indicator" id="gauge-led-dot-speed" title="Shift Light"></div>
+
+
+
             </div>
+
+
+
         </div>
-        <div class="gauge-card gauge-card--side">
-            <div class="gauge-visual">
-                <svg viewBox="0 0 52.917 52.917" class="gauge-svg" preserveAspectRatio="xMidYMid meet">
+
+
+        <div class="gauge-card gauge-card--center">
+            <div class="gauge-visual" style="position: relative;">
+                <svg viewBox="0 0 105.83 105.83" class="gauge-svg" preserveAspectRatio="xMidYMid meet">
                     <defs>
                         <filter id="accel-filter208" x="-.3" y="-.24" width="1.6" height="1.48"
                             color-interpolation-filters="sRGB">
@@ -223,11 +234,18 @@
                         </g>
                     </g>
                 </svg>
-                <div class="gauge-led-indicator" id="gauge-led-dot-rpm" title="Shift Light"></div>
-            </div>
-            <div class="gauge-footer">
-                <div class="gauge-label">RPM</div>
-                <div class="gauge-value" id="val-rpm">0</div>
+                <div class="gauge-digital-panel"
+                    style="position: absolute; top: 57%; right: 13%; transform: translateY(-50%); z-index: 2;">
+                    <div class="gauge-gear-row">
+                        <div class="shift-light-triangle" id="shift-light-triangle"></div>
+                        <div class="sport-gear" id="val-temp">--</div>
+                    </div>
+                    <div class="sport-speed">
+                        <span id="val-temp-value">00</span>
+                        <span class="sport-speed-unit">°C</span>
+                    </div>
+                </div>
+                <div class="gauge-led-indicator" id="gauge-led-dot-temp" title="Shift Light"></div>
             </div>
         </div>
 

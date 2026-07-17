@@ -630,7 +630,7 @@ function renderEcuUI(rpm, speed, map, ect, fpress, fpress_avail, load, battery, 
     updateVisuals(rpm, map, ect);
 
     // 2b. Gauges do painel Sport (SVG needles + indicador de cor do LED)
-    updateGaugeVisuals(rpm, speed, map, ledColor);
+    updateGaugeVisuals(rpm, ect, map, ledColor)
 
     // 3. Sincronização com Bancada (Apenas se estiver no modo manual)
     syncManualControls(rpm, speed, map, ect, fpress, fpress_avail);
@@ -694,19 +694,22 @@ function setNeedleAngle(id, pivotX, pivotY, angleDeg) {
     el.setAttribute('transform', `rotate(${angleDeg} ${pivotX} ${pivotY})`);
 }
 
-function updateGaugeVisuals(rpm, speed, turbo, ledColor) {
+// Antes de chamar updateGaugeVisuals, atualize os valores de temperatura:
+document.getElementById('val-temp-value').innerText = Math.round(ect);
+document.getElementById('val-temp').innerText = Math.round(ect) + '°';
+
+function updateGaugeVisuals(rpm, ect, turbo, ledColor) {
     // Acelerômetro (RPM): escala 0-8000, ângulos -170°..40°, pivô (25.797, 25.797)
     const rpmClamped = Math.min(Math.max(rpm, 0), 8000);
     const rpmAngle = -170 + (rpmClamped / 8000) * (40 - -170);
     setNeedleAngle('needle-rpm', 25.797, 25.797, rpmAngle);
 
-    // Manômetro (velocidade): escala 0-240 km/h, ângulos -170°..52°, pivô (52.917, 52.917)
-    const speedClamped = Math.min(Math.max(speed, 0), 240);
-    const speedAngle = -170 + (speedClamped / 240) * (52 - -170);
-    setNeedleAngle('needle-speed', 52.917, 52.917, speedAngle);
+    // Manômetro (temperatura do motor): escala 0-120°C, ângulos -170°..52°, pivô (52.917, 52.917)
+    const ectClamped = Math.min(Math.max(ect, 0), 120);
+    const ectAngle = -170 + (ectClamped / 120) * (52 - -170);
+    setNeedleAngle('needle-speed', 52.917, 52.917, ectAngle);
 
-    // Triângulo de shift-light no painel digital: mesmo limiar já usado pelo
-    // alerta de tela (currentRedlineRpm), sem introduzir um segundo "redline" fixo.
+    // Triângulo de shift-light: ligado ao RPM (redline)
     const triangle = document.getElementById('shift-light-triangle');
     if (triangle) triangle.classList.toggle('shift-light-triangle--active', rpm >= currentRedlineRpm);
 
