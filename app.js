@@ -686,25 +686,29 @@ function runManualLoop() {
     Novas funções para painel-Sport
 */
 
-function setGaugeNeedle(id, fraction) {
+// Gira uma agulha em torno do centro do PRÓPRIO viewBox do SVG onde ela vive
+// (o Acelerômetro e o Manômetro têm viewBoxes e centros diferentes entre si).
+function setNeedleAngle(id, pivotX, pivotY, angleDeg) {
     const el = document.getElementById(id);
     if (!el) return;
-    const frac = Math.max(0, Math.min(1, fraction));
-    const angle = -90 + (frac * 180);
-    el.setAttribute('transform', `rotate(${angle} 200 200)`);
+    el.setAttribute('transform', `rotate(${angleDeg} ${pivotX} ${pivotY})`);
 }
 
 function updateGaugeVisuals(rpm, speed, turbo, ledColor) {
-    setGaugeNeedle('needle-rpm', rpm / 8000);
-    setGaugeNeedle('needle-speed', speed / 180);
-    if (typeof turbo === 'number') setGaugeNeedle('needle-turbo', turbo / 1.0);
+    // Acelerômetro (RPM): escala 0-8000, ângulos -170°..40°, pivô (25.797, 25.797)
+    const rpmClamped = Math.min(Math.max(rpm, 0), 8000);
+    const rpmAngle = -170 + (rpmClamped / 8000) * (40 - -170);
+    setNeedleAngle('needle-rpm', 25.797, 25.797, rpmAngle);
 
-    const throttleArc = document.getElementById('gauge-throttle');
-    if (throttleArc && typeof turbo === 'number') {
-        const length = throttleArc.getTotalLength();
-        const throttleFraction = Math.max(0, Math.min(1, (turbo + 1) / 4));
-        throttleArc.style.strokeDasharray = `${length * throttleFraction} ${length * (1 - throttleFraction)}`;
-    }
+    // Manômetro (velocidade): escala 0-240 km/h, ângulos -170°..52°, pivô (52.917, 52.917)
+    const speedClamped = Math.min(Math.max(speed, 0), 240);
+    const speedAngle = -170 + (speedClamped / 240) * (52 - -170);
+    setNeedleAngle('needle-speed', 52.917, 52.917, speedAngle);
+
+    // Triângulo de shift-light no painel digital: mesmo limiar já usado pelo
+    // alerta de tela (currentRedlineRpm), sem introduzir um segundo "redline" fixo.
+    const triangle = document.getElementById('shift-light-triangle');
+    if (triangle) triangle.classList.toggle('shift-light-triangle--active', rpm >= currentRedlineRpm);
 
     if (ledColor) {
         document.querySelectorAll('.gauge-led-indicator').forEach(dot => {

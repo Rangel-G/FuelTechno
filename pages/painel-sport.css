@@ -27,7 +27,7 @@
     width: 100%;
     max-width: 1160px;
     display: grid;
-    grid-template-columns: 1fr 1.4fr 1fr;
+    grid-template-columns: 1fr 1.4fr;
     gap: 16px;
     align-items: stretch;
     justify-items: stretch;
@@ -246,6 +246,47 @@
     font-size: 14px;
     letter-spacing: 0.35em;
     text-transform: uppercase;
+}
+
+/* Painel digital do novo Manômetro (gear + velocidade), posicionado sobre o SVG
+   conforme o layout original do design (offset à direita, não centralizado). */
+.gauge-digital-panel {
+    position: absolute;
+    top: 57%;
+    right: 13%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.gauge-gear-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.shift-light-triangle {
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 30px solid #ffffff;
+    opacity: 0.1;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.shift-light-triangle.shift-light-triangle--active {
+    opacity: 1;
+    animation: shiftLightBlink 0.1s infinite;
+}
+
+@keyframes shiftLightBlink {
+    0%, 100% { opacity: 1; filter: drop-shadow(0 0 10px #ffffff); }
+    50% { opacity: 0.2; filter: none; }
 }
 
 .panel-sport-v2 .gauge-card--center {
