@@ -1,158 +1,253 @@
 ﻿<div id="page-painel" class="page-content panel-sport-v2 active-page">
     <div class="dashboard">
         <div class="gauge-card gauge-card--side">
-            <svg viewBox="0 0 52.917 52.917" class="gauge-svg" preserveAspectRatio="xMidYMid meet">
-                <defs>
-                    <filter id="accel-filter208" x="-.3" y="-.24" width="1.6" height="1.48" color-interpolation-filters="sRGB">
-                        <feFlood flood-color="rgb(0,0,0)" in="SourceGraphic" result="flood"/>
-                        <feGaussianBlur in="SourceGraphic" result="blur" stdDeviation="0.500000"/>
-                        <feOffset dx="-0.000000" dy="0.000000" in="blur" result="offset"/>
-                        <feComposite in="flood" in2="offset" operator="in" result="comp1"/>
-                        <feComposite in="SourceGraphic" in2="comp1" result="fbSourceGraphic"/>
-                        <feColorMatrix in="fbSourceGraphic" result="fbSourceGraphicAlpha" values="0 0 0 -1 0 0 0 0 -1 0 0 0 0 -1 0 0 0 0 1 0"/>
-                        <feFlood flood-color="rgb(0,0,0)" in="fbSourceGraphic" result="flood"/>
-                        <feGaussianBlur in="fbSourceGraphic" result="blur" stdDeviation="0.500000"/>
-                        <feOffset dx="-0.000000" dy="0.000000" in="blur" result="offset"/>
-                        <feComposite in="flood" in2="offset" operator="in" result="comp1"/>
-                        <feComposite in="fbSourceGraphic" in2="comp1" result="comp2"/>
-                    </filter>
-                    <radialGradient id="accel-radialGradient211" cx="52.917" cy="52.917" r="52.917" gradientTransform="matrix(.5125 0 0 .5125 -1.3229 -1.3229)" gradientUnits="userSpaceOnUse">
-                        <stop stop-opacity="0" offset=".7483"/>
-                        <stop offset="1"/>
-                    </radialGradient>
-                    <filter id="accel-filter3" x="-.16164" y="-.18636" width="1.3233" height="1.3727" color-interpolation-filters="sRGB">
-                        <feFlood flood-color="rgb(0,0,0)" in="SourceGraphic" result="flood"/>
-                        <feGaussianBlur in="SourceGraphic" result="blur" stdDeviation="0.500000"/>
-                        <feOffset dx="-0.000000" dy="0.000000" in="blur" result="offset"/>
-                        <feComposite in="flood" in2="offset" operator="in" result="comp1"/>
-                        <feComposite in="SourceGraphic" in2="comp1" result="comp2"/>
-                    </filter>
-                    <clipPath id="accel-clipPath24">
-                        <circle cx="25.797" cy="25.797" r="26.458" fill="none" stroke="#000" stroke-width="1.3229"/>
-                    </clipPath>
-                </defs>
-                <g transform="matrix(.97561 0 0 .97561 1.2906 1.2907)">
-                    <circle cx="25.797" cy="25.797" r="26.458" opacity=".1" stroke="#000" stroke-width="1.3229"/>
-                    <g clip-path="url(#accel-clipPath24)" fill="#b4b4b4" stroke="#000" stroke-linecap="round">
-                        <ellipse cx="18.28" cy="39.395" rx="16.272" ry="15.636" stroke-width="1.0848"/>
-                        <circle cx="41.739" cy="35.8" r="6.2184" stroke-width="1.1231"/>
-                        <circle cx="35.772" cy="22.783" r="6.7159" stroke-width="1.2129"/>
-                        <circle cx="22.619" cy="16.003" r="6.7159" stroke-width="1.2129"/>
-                        <circle cx="8.6527" cy="18.172" r="6.2184" stroke-width="1.1231"/>
+            <div class="gauge-visual" style="position: relative;">
+                <svg viewBox="0 0 105 150" class="gauge-svg" preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                        <filter id="filter208" x="-.3" y="-.24" width="1.6" height="1.48"
+                            color-interpolation-filters="sRGB">
+                            <feFlood flood-color="rgb(0,0,0)" in="SourceGraphic" result="flood" />
+                            <feGaussianBlur in="SourceGraphic" result="blur" stdDeviation="0.500000" />
+                            <feOffset dx="-0.000000" dy="0.000000" in="blur" result="offset" />
+                            <feComposite in="flood" in2="offset" operator="in" result="comp1" />
+                            <feComposite in="SourceGraphic" in2="comp1" result="fbSourceGraphic" />
+                            <feColorMatrix in="fbSourceGraphic" result="fbSourceGraphicAlpha"
+                                values="0 0 0 -1 0 0 0 0 -1 0 0 0 0 -1 0 0 0 0 1 0" />
+                            <feFlood flood-color="rgb(0,0,0)" in="fbSourceGraphic" result="flood" />
+                            <feGaussianBlur in="fbSourceGraphic" result="blur" stdDeviation="0.500000" />
+                            <feOffset dx="-0.000000" dy="0.000000" in="blur" result="offset" />
+                            <feComposite in="flood" in2="offset" operator="in" result="comp1" />
+                            <feComposite in="fbSourceGraphic" in2="comp1" result="comp2" />
+                        </filter>
+                        <radialGradient id="radialGradient211" cx="52.917" cy="52.917" r="52.917"
+                            gradientUnits="userSpaceOnUse">
+                            <stop stop-opacity="0" offset=".80744" />
+                            <stop offset=".99344" />
+                        </radialGradient>
+                        <filter id="filter229" x="-.23601" y="-.2058" width="1.472" height="1.4116"
+                            color-interpolation-filters="sRGB">
+                            <feGaussianBlur stdDeviation="0.54728426" />
+                        </filter>
+                        <filter id="filter230" x="-.23601" y="-.2058" width="1.472" height="1.4116"
+                            color-interpolation-filters="sRGB">
+                            <feGaussianBlur stdDeviation="0.54728426" />
+                        </filter>
+                        <clipPath id="clipPath247">
+                            <circle cx="52.917" cy="52.917" r="52.917" fill="#edf672" stroke="#edf672"
+                                stroke-width="2.6458" />
+                        </clipPath>
+                    </defs>
+                    <g transform="matrix(.97561 0 0 .97561 1.2906 1.2907)">
+                        <g clip-path="url(#clipPath247)">
+                            <g stroke="#000">
+                                <path
+                                    d="m70.529 27.135c10.073-8.4644 29.044-1.7842 29.044-1.7842s-4.7122 13.33-18.146 22.637"
+                                    fill="#b4b4b4" stroke-width="2.092" />
+                                <path
+                                    d="m73.623 28.854c7.5596-6.0523 21.796-1.2757 21.796-1.2757s-3.5363 9.5316-13.618 16.186"
+                                    fill="#fff" stroke-width=".96185" />
+                            </g>
+                            <ellipse transform="matrix(.99885 .047893 -.21438 -.97675 0 0)" cx="16.851" cy="-46.945"
+                                rx="55.886" ry="47.882" fill="#b4b4b4" stroke="#000" stroke-width="2.1543"
+                                style="paint-order:normal" />
+                            <g fill="none" stroke="#000" stroke-linecap="round">
+                                <path transform="matrix(.9168 .39934 -.43679 .89956 0 0)"
+                                    d="m90.582 47.374a20.708 20.408 0 0 1 16.601 10.474" stroke-width="2.1176"
+                                    style="paint-order:normal" />
+                                <path transform="matrix(.98632 .16487 -.17375 .98479 0 0)"
+                                    d="m80.75 60.324a18.956 20.456 0 0 1 15.197 10.499" stroke-width="2.1167"
+                                    style="paint-order:normal" />
+                                <path transform="matrix(.99772 -.06752 .016586 .99986 0 0)"
+                                    d="m71.995 71.03a18.534 20.59 0 0 1 14.859 10.568" stroke-width="2.118"
+                                    style="paint-order:normal" />
+                            </g>
+                            <ellipse transform="matrix(.94132 .33753 -.3469 .9379 0 0)" cx="69.147" cy="32.723"
+                                rx="6.653" ry="7.6297" style="paint-order:normal" />
+                            <ellipse transform="matrix(.94132 .33753 -.3469 .9379 0 0)" cx="67.317" cy="30.79"
+                                rx="2.7826" ry="3.1911" fill="#fff" filter="url(#filter230)"
+                                style="paint-order:normal" />
+                            <path d="m57.229 30.413a16.412 15.657 0 0 1 13.157 8.0359" fill="none" stroke="#000"
+                                stroke-linecap="round" stroke-width="1.7211" style="paint-order:normal" />
+                            <ellipse transform="matrix(.61554 .78811 -.74507 .66699 0 0)" cx="35.311" cy="14.5"
+                                rx="5.9922" ry="7.5313" style="paint-order:normal" />
+                            <ellipse transform="matrix(.94132 .33753 -.3469 .9379 0 0)" cx="25.563" cy="29.655"
+                                rx="2.7826" ry="3.1911" fill="#fff" filter="url(#filter229)"
+                                style="paint-order:normal" />
+                            <path transform="rotate(-5.0211)" d="m9.6503 12.624a16.412 15.657 0 0 1 13.157 8.0359"
+                                fill="none" stroke="#000" stroke-linecap="round" stroke-width="1.7211"
+                                style="paint-order:normal" />
+                            <path
+                                d="m19.007 66.135-4.763-0.12126c-1.0491 2.4535-0.50191 5.2167 1.428 7.2105 1.93 1.9938 4.9366 2.9021 7.8458 2.3702 2.9093-0.53177 5.2599-2.4194 6.134-4.9258-0.47062-0.58118-4.3966-2.9058-5.4108-6.8038-0.04773-0.18343-1.2239 0.51639-2.4544 1.3282-1.1972 0.78992-2.7797 0.9419-2.7797 0.9419z"
+                                fill="#fff" stroke="#000" stroke-linecap="round" stroke-width="2.2944"
+                                style="paint-order:normal" />
+                            <path
+                                d="m23.084 65.294-1.4742 4.1702 2.5938-3.9357 1.7982 0.35584-1.8662-2.4554-3.3701 2.0239z"
+                                style="paint-order:normal" />
+                            <g stroke="#000">
+                                <path d="m39.655 67.1a8 9.1901 0 0 1-10.617 2.8831 8 9.1901 0 0 1-3.2477-11.965"
+                                    fill="none" stroke-linecap="round" stroke-width="2.1167"
+                                    style="paint-order:normal" />
+                                <path
+                                    d="m25.466 58.541a7.5625 9.1901 0 0 1-8.478 7.4053 7.5625 9.1901 0 0 1-6.4852-9.9436"
+                                    fill="none" stroke-linecap="round" stroke-width="2.1167"
+                                    style="paint-order:normal" />
+                                <path
+                                    d="m20.939 53.95s4.3823 0.26736 6.9796 1.5563c2.2823 1.1326 5.4705 3.537 5.4705 3.537l-8.1114 1.3205z"
+                                    stroke-width="2.6458" style="paint-order:normal" />
+                            </g>
+                        </g>
+                        <circle cx="52.917" cy="52.917" r="52.917" fill="url(#radialGradient211)"
+                            style="mix-blend-mode:normal" />
+                        <path transform="matrix(1 -.0016963 0 1 0 0)"
+                            d="m52.917 103.34a50.336 50.335 0 0 1-43.592-25.168 50.336 50.335 0 0 1-2e-7 -50.335 50.336 50.335 0 0 1 43.592-25.168"
+                            fill-opacity="0" stroke="#fff" stroke-width="2.6458" />
+                        <path d="m66.843 4.9201a49.976 49.976 0 0 1 27.455 19.976" fill-opacity="0" stroke="#f90000"
+                            stroke-width="3.2353" />
+                        <g transform="rotate(196.36 52.917 52.917)" fill="#fff" stroke-width="0">
+                            <path transform="matrix(-.46581 -.26384 .26384 -.46581 38.95 125.28)"
+                                d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" />
+                            <path transform="matrix(.50444 -.17924 .17924 .50444 7.3774 -5.0267)"
+                                d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" />
+                            <path transform="matrix(.52127 .12193 -.12193 .52127 45.933 -20.449)"
+                                d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" />
+                            <path transform="matrix(.3726 .38439 -.38439 .3726 86.706 -12.578)"
+                                d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" />
+                            <path transform="matrix(.10563 .52482 -.52482 .10563 116.75 16.086)"
+                                d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" />
+                            <path transform="matrix(-.19487 .49861 -.49861 -.19487 126.53 56.444)"
+                                d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" />
+                            <path transform="matrix(-.4335 .31411 -.31411 -.4335 112.94 95.682)"
+                                d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" />
+                            <path transform="matrix(-.53451 .029878 -.029878 -.53451 80.289 121.34)"
+                                d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" />
+                        </g>
+                        <g id="needle-speed" transform="rotate(-170 52.917 52.917)">
+                            <path
+                                d="m50.917 8.2021-1.9999 2.9999 1.9999 3.0001 2.0001 4 2.0001-4 1.9999-3.0001-1.9999-2.9999zm0.60007 0.84667 2.8-1e-6 1e-6 4.2001-2.8 1e-6z"
+                                fill="#fff" filter="url(#filter208)" stroke-width="0" />
+                        </g>
+                        <path
+                            d="m83.729 31.587s-8.9603 14.846-15.269 19.865c-2.1952 1.7466-15.544 1.8297-15.544 1.8297v41.188h35.055c11.358-10.437 17.862-25.434 17.862-41.188-7e-5 -8.2433-0.87365-14.382-4.3095-21.812z"
+                            fill-opacity=".75" />
+                        <circle cx="52.917" cy="52.917" r="52.917" fill="none" stroke="#000" stroke-width="2.6458" />
                     </g>
-                    <path transform="rotate(178)" d="m-21.945-50.19a26.458 26.458 0 0 1 12.884 5.9276" fill="none" stroke="#f63434" stroke-width="4.068"/>
-                    <path d="m28.733 2.2726a26.458 26.458 0 0 1 12.884 5.9276" fill="none" stroke="#f63434" stroke-width="4.068"/>
-                    <circle cx="25.797" cy="25.797" r="27.12" fill="url(#accel-radialGradient211)" style="mix-blend-mode:normal"/>
-                    <circle transform="rotate(255.38)" cx="-31.474" cy="18.449" r=".13229" fill="#e31ce0"/>
-                    <g fill="#fff" stroke-width="0">
-                        <path transform="matrix(-.5275 -.091294 .091294 -.5275 43.603 76.128)" d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" filter="url(#accel-filter3)"/>
-                        <path transform="matrix(-.41118 -.34281 .34281 -.41118 16.054 78.288)" d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" filter="url(#accel-filter3)"/>
-                        <path transform="matrix(-.18469 -.50248 .50248 -.18469 -8.8837 66.384)" d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" filter="url(#accel-filter3)"/>
-                        <path transform="matrix(.091294 -.5275 .5275 .091294 -24.529 43.606)" d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" filter="url(#accel-filter3)"/>
-                        <path transform="matrix(.34281 -.41118 .41118 .34281 -26.689 16.057)" d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" filter="url(#accel-filter3)"/>
-                        <path transform="matrix(.50248 -.18469 .18469 .50248 -14.785 -8.8809)" d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" filter="url(#accel-filter3)"/>
-                        <path transform="matrix(.5275 .091294 -.091294 .5275 7.9933 -24.526)" d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" filter="url(#accel-filter3)"/>
-                        <path transform="matrix(.41118 .34281 -.34281 .41118 35.542 -26.686)" d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" filter="url(#accel-filter3)"/>
-                    </g>
-                    <g id="needle-rpm" transform="rotate(-170 25.797 25.797)">
-                        <path d="m23.797 4.3315-1.9999 2.9999 1.9999 3.0001 2.0001 4 2.0001-4 1.9999-3.0001-1.9999-2.9999zm0.60007 0.84667 2.8-1e-6 1e-6 4.2001-2.8 1e-6z" fill="#fff" filter="url(#accel-filter208)" stroke-width="0"/>
-                    </g>
-                </g>
-            </svg>
-            <div class="gauge-footer">
-                <div class="gauge-label">RPM</div>
-                <div class="gauge-value" id="val-rpm">0</div>
+                </svg>
+            
+
+                <div class="digitalPanel">
+                    <div class="gearRow">
+                        <div class="shiftLightTriangle" 
+                            style=" opacity: rpm > 5000 ? 1 : 0.1, 
+                    animation: rpm > 7000 ? 'freneticBlink 0.1s infinite' : 'none' "
+                        ></div>
+                        <div class="gearText">8</div>
+                    </div>
+
+                    <div class="speedText">390</div>
+                    <div class="kmhText">KM/H</div>
+                </div>
+
+
+
             </div>
-            <div class="gauge-led-indicator" id="gauge-led-dot-rpm" title="Shift Light"></div>
+
+
+
         </div>
 
+
         <div class="gauge-card gauge-card--center">
-            <svg viewBox="0 0 105.83 105.83" class="gauge-svg" preserveAspectRatio="xMidYMid meet">
-                <defs>
-                    <filter id="filter208" x="-.3" y="-.24" width="1.6" height="1.48" color-interpolation-filters="sRGB">
-                        <feFlood flood-color="rgb(0,0,0)" in="SourceGraphic" result="flood" />
-                        <feGaussianBlur in="SourceGraphic" result="blur" stdDeviation="0.500000" />
-                        <feOffset dx="-0.000000" dy="0.000000" in="blur" result="offset" />
-                        <feComposite in="flood" in2="offset" operator="in" result="comp1" />
-                        <feComposite in="SourceGraphic" in2="comp1" result="fbSourceGraphic" />
-                        <feColorMatrix in="fbSourceGraphic" result="fbSourceGraphicAlpha" values="0 0 0 -1 0 0 0 0 -1 0 0 0 0 -1 0 0 0 0 1 0" />
-                        <feFlood flood-color="rgb(0,0,0)" in="fbSourceGraphic" result="flood" />
-                        <feGaussianBlur in="fbSourceGraphic" result="blur" stdDeviation="0.500000" />
-                        <feOffset dx="-0.000000" dy="0.000000" in="blur" result="offset" />
-                        <feComposite in="flood" in2="offset" operator="in" result="comp1" />
-                        <feComposite in="fbSourceGraphic" in2="comp1" result="comp2" />
-                    </filter>
-                    <radialGradient id="radialGradient211" cx="52.917" cy="52.917" r="52.917" gradientUnits="userSpaceOnUse">
-                        <stop stop-opacity="0" offset=".80744" />
-                        <stop offset=".99344" />
-                    </radialGradient>
-                    <filter id="filter229" x="-.23601" y="-.2058" width="1.472" height="1.4116" color-interpolation-filters="sRGB">
-                        <feGaussianBlur stdDeviation="0.54728426" />
-                    </filter>
-                    <filter id="filter230" x="-.23601" y="-.2058" width="1.472" height="1.4116" color-interpolation-filters="sRGB">
-                        <feGaussianBlur stdDeviation="0.54728426" />
-                    </filter>
-                    <clipPath id="clipPath247">
-                        <circle cx="52.917" cy="52.917" r="52.917" fill="#edf672" stroke="#edf672" stroke-width="2.6458" />
-                    </clipPath>
-                </defs>
-                <g transform="matrix(.97561 0 0 .97561 1.2906 1.2907)">
-                    <g clip-path="url(#clipPath247)">
-                        <g stroke="#000">
-                            <path d="m70.529 27.135c10.073-8.4644 29.044-1.7842 29.044-1.7842s-4.7122 13.33-18.146 22.637" fill="#b4b4b4" stroke-width="2.092" />
-                            <path d="m73.623 28.854c7.5596-6.0523 21.796-1.2757 21.796-1.2757s-3.5363 9.5316-13.618 16.186" fill="#fff" stroke-width=".96185" />
+            <div class="gauge-visual" style="position: relative;">
+                <svg viewBox="0 0 105.83 105.83" class="gauge-svg" preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                        <filter id="accel-filter208" x="-.3" y="-.24" width="1.6" height="1.48"
+                            color-interpolation-filters="sRGB">
+                            <feFlood flood-color="rgb(0,0,0)" in="SourceGraphic" result="flood" />
+                            <feGaussianBlur in="SourceGraphic" result="blur" stdDeviation="0.500000" />
+                            <feOffset dx="-0.000000" dy="0.000000" in="blur" result="offset" />
+                            <feComposite in="flood" in2="offset" operator="in" result="comp1" />
+                            <feComposite in="SourceGraphic" in2="comp1" result="fbSourceGraphic" />
+                            <feColorMatrix in="fbSourceGraphic" result="fbSourceGraphicAlpha"
+                                values="0 0 0 -1 0 0 0 0 -1 0 0 0 0 -1 0 0 0 0 1 0" />
+                            <feFlood flood-color="rgb(0,0,0)" in="fbSourceGraphic" result="flood" />
+                            <feGaussianBlur in="fbSourceGraphic" result="blur" stdDeviation="0.500000" />
+                            <feOffset dx="-0.000000" dy="0.000000" in="blur" result="offset" />
+                            <feComposite in="flood" in2="offset" operator="in" result="comp1" />
+                            <feComposite in="fbSourceGraphic" in2="comp1" result="comp2" />
+                        </filter>
+                        <radialGradient id="accel-radialGradient211" cx="52.917" cy="52.917" r="52.917"
+                            gradientTransform="matrix(.5125 0 0 .5125 -1.3229 -1.3229)" gradientUnits="userSpaceOnUse">
+                            <stop stop-opacity="0" offset=".7483" />
+                            <stop offset="1" />
+                        </radialGradient>
+                        <filter id="accel-filter3" x="-.16164" y="-.18636" width="1.3233" height="1.3727"
+                            color-interpolation-filters="sRGB">
+                            <feFlood flood-color="rgb(0,0,0)" in="SourceGraphic" result="flood" />
+                            <feGaussianBlur in="SourceGraphic" result="blur" stdDeviation="0.500000" />
+                            <feOffset dx="-0.000000" dy="0.000000" in="blur" result="offset" />
+                            <feComposite in="flood" in2="offset" operator="in" result="comp1" />
+                            <feComposite in="SourceGraphic" in2="comp1" result="comp2" />
+                        </filter>
+                        <clipPath id="accel-clipPath24">
+                            <circle cx="25.797" cy="25.797" r="26.458" fill="none" stroke="#000"
+                                stroke-width="1.3229" />
+                        </clipPath>
+                    </defs>
+                    <g transform="matrix(.97561 0 0 .97561 1.2906 1.2907)">
+                        <circle cx="25.797" cy="25.797" r="26.458" opacity=".1" stroke="#000" stroke-width="1.3229" />
+                        <g clip-path="url(#accel-clipPath24)" fill="#b4b4b4" stroke="#000" stroke-linecap="round">
+                            <ellipse cx="18.28" cy="39.395" rx="16.272" ry="15.636" stroke-width="1.0848" />
+                            <circle cx="41.739" cy="35.8" r="6.2184" stroke-width="1.1231" />
+                            <circle cx="35.772" cy="22.783" r="6.7159" stroke-width="1.2129" />
+                            <circle cx="22.619" cy="16.003" r="6.7159" stroke-width="1.2129" />
+                            <circle cx="8.6527" cy="18.172" r="6.2184" stroke-width="1.1231" />
                         </g>
-                        <ellipse transform="matrix(.99885 .047893 -.21438 -.97675 0 0)" cx="16.851" cy="-46.945" rx="55.886" ry="47.882" fill="#b4b4b4" stroke="#000" stroke-width="2.1543" style="paint-order:normal" />
-                        <g fill="none" stroke="#000" stroke-linecap="round">
-                            <path transform="matrix(.9168 .39934 -.43679 .89956 0 0)" d="m90.582 47.374a20.708 20.408 0 0 1 16.601 10.474" stroke-width="2.1176" style="paint-order:normal" />
-                            <path transform="matrix(.98632 .16487 -.17375 .98479 0 0)" d="m80.75 60.324a18.956 20.456 0 0 1 15.197 10.499" stroke-width="2.1167" style="paint-order:normal" />
-                            <path transform="matrix(.99772 -.06752 .016586 .99986 0 0)" d="m71.995 71.03a18.534 20.59 0 0 1 14.859 10.568" stroke-width="2.118" style="paint-order:normal" />
+                        <path transform="rotate(178)" d="m-21.945-50.19a26.458 26.458 0 0 1 12.884 5.9276" fill="none"
+                            stroke="#f63434" stroke-width="4.068" />
+                        <path d="m28.733 2.2726a26.458 26.458 0 0 1 12.884 5.9276" fill="none" stroke="#f63434"
+                            stroke-width="4.068" />
+                        <circle cx="25.797" cy="25.797" r="27.12" fill="url(#accel-radialGradient211)"
+                            style="mix-blend-mode:normal" />
+                        <circle transform="rotate(255.38)" cx="-31.474" cy="18.449" r=".13229" fill="#e31ce0" />
+                        <g fill="#fff" stroke-width="0">
+                            <path transform="matrix(-.5275 -.091294 .091294 -.5275 43.603 76.128)"
+                                d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" filter="url(#accel-filter3)" />
+                            <path transform="matrix(-.41118 -.34281 .34281 -.41118 16.054 78.288)"
+                                d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" filter="url(#accel-filter3)" />
+                            <path transform="matrix(-.18469 -.50248 .50248 -.18469 -8.8837 66.384)"
+                                d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" filter="url(#accel-filter3)" />
+                            <path transform="matrix(.091294 -.5275 .5275 .091294 -24.529 43.606)"
+                                d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" filter="url(#accel-filter3)" />
+                            <path transform="matrix(.34281 -.41118 .41118 .34281 -26.689 16.057)"
+                                d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" filter="url(#accel-filter3)" />
+                            <path transform="matrix(.50248 -.18469 .18469 .50248 -14.785 -8.8809)"
+                                d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" filter="url(#accel-filter3)" />
+                            <path transform="matrix(.5275 .091294 -.091294 .5275 7.9933 -24.526)"
+                                d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" filter="url(#accel-filter3)" />
+                            <path transform="matrix(.41118 .34281 -.34281 .41118 35.542 -26.686)"
+                                d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" filter="url(#accel-filter3)" />
                         </g>
-                        <ellipse transform="matrix(.94132 .33753 -.3469 .9379 0 0)" cx="69.147" cy="32.723" rx="6.653" ry="7.6297" style="paint-order:normal" />
-                        <ellipse transform="matrix(.94132 .33753 -.3469 .9379 0 0)" cx="67.317" cy="30.79" rx="2.7826" ry="3.1911" fill="#fff" filter="url(#filter230)" style="paint-order:normal" />
-                        <path d="m57.229 30.413a16.412 15.657 0 0 1 13.157 8.0359" fill="none" stroke="#000" stroke-linecap="round" stroke-width="1.7211" style="paint-order:normal" />
-                        <ellipse transform="matrix(.61554 .78811 -.74507 .66699 0 0)" cx="35.311" cy="14.5" rx="5.9922" ry="7.5313" style="paint-order:normal" />
-                        <ellipse transform="matrix(.94132 .33753 -.3469 .9379 0 0)" cx="25.563" cy="29.655" rx="2.7826" ry="3.1911" fill="#fff" filter="url(#filter229)" style="paint-order:normal" />
-                        <path transform="rotate(-5.0211)" d="m9.6503 12.624a16.412 15.657 0 0 1 13.157 8.0359" fill="none" stroke="#000" stroke-linecap="round" stroke-width="1.7211" style="paint-order:normal" />
-                        <path d="m19.007 66.135-4.763-0.12126c-1.0491 2.4535-0.50191 5.2167 1.428 7.2105 1.93 1.9938 4.9366 2.9021 7.8458 2.3702 2.9093-0.53177 5.2599-2.4194 6.134-4.9258-0.47062-0.58118-4.3966-2.9058-5.4108-6.8038-0.04773-0.18343-1.2239 0.51639-2.4544 1.3282-1.1972 0.78992-2.7797 0.9419-2.7797 0.9419z" fill="#fff" stroke="#000" stroke-linecap="round" stroke-width="2.2944" style="paint-order:normal" />
-                        <path d="m23.084 65.294-1.4742 4.1702 2.5938-3.9357 1.7982 0.35584-1.8662-2.4554-3.3701 2.0239z" style="paint-order:normal" />
-                        <g stroke="#000">
-                            <path d="m39.655 67.1a8 9.1901 0 0 1-10.617 2.8831 8 9.1901 0 0 1-3.2477-11.965" fill="none" stroke-linecap="round" stroke-width="2.1167" style="paint-order:normal" />
-                            <path d="m25.466 58.541a7.5625 9.1901 0 0 1-8.478 7.4053 7.5625 9.1901 0 0 1-6.4852-9.9436" fill="none" stroke-linecap="round" stroke-width="2.1167" style="paint-order:normal" />
-                            <path d="m20.939 53.95s4.3823 0.26736 6.9796 1.5563c2.2823 1.1326 5.4705 3.537 5.4705 3.537l-8.1114 1.3205z" stroke-width="2.6458" style="paint-order:normal" />
+                        <g id="needle-rpm" transform="rotate(-170 25.797 25.797)">
+                            <path
+                                d="m23.797 4.3315-1.9999 2.9999 1.9999 3.0001 2.0001 4 2.0001-4 1.9999-3.0001-1.9999-2.9999zm0.60007 0.84667 2.8-1e-6 1e-6 4.2001-2.8 1e-6z"
+                                fill="#fff" filter="url(#accel-filter208)" stroke-width="0" />
                         </g>
                     </g>
-                    <circle cx="52.917" cy="52.917" r="52.917" fill="url(#radialGradient211)" style="mix-blend-mode:normal" />
-                    <path transform="matrix(1 -.0016963 0 1 0 0)" d="m52.917 103.34a50.336 50.335 0 0 1-43.592-25.168 50.336 50.335 0 0 1-2e-7 -50.335 50.336 50.335 0 0 1 43.592-25.168" fill-opacity="0" stroke="#fff" stroke-width="2.6458" />
-                    <path d="m66.843 4.9201a49.976 49.976 0 0 1 27.455 19.976" fill-opacity="0" stroke="#f90000" stroke-width="3.2353" />
-                    <g transform="rotate(196.36 52.917 52.917)" fill="#fff" stroke-width="0">
-                        <path transform="matrix(-.46581 -.26384 .26384 -.46581 38.95 125.28)" d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" />
-                        <path transform="matrix(.50444 -.17924 .17924 .50444 7.3774 -5.0267)" d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" />
-                        <path transform="matrix(.52127 .12193 -.12193 .52127 45.933 -20.449)" d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" />
-                        <path transform="matrix(.3726 .38439 -.38439 .3726 86.706 -12.578)" d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" />
-                        <path transform="matrix(.10563 .52482 -.52482 .10563 116.75 16.086)" d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" />
-                        <path transform="matrix(-.19487 .49861 -.49861 -.19487 126.53 56.444)" d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" />
-                        <path transform="matrix(-.4335 .31411 -.31411 -.4335 112.94 95.682)" d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" />
-                        <path transform="matrix(-.53451 .029878 -.029878 -.53451 80.289 121.34)" d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" />
-                    </g>
-                    <g id="needle-speed" transform="rotate(-170 52.917 52.917)">
-                        <path d="m50.917 8.2021-1.9999 2.9999 1.9999 3.0001 2.0001 4 2.0001-4 1.9999-3.0001-1.9999-2.9999zm0.60007 0.84667 2.8-1e-6 1e-6 4.2001-2.8 1e-6z" fill="#fff" filter="url(#filter208)" stroke-width="0" />
-                    </g>
-                    <path d="m83.729 31.587s-8.9603 14.846-15.269 19.865c-2.1952 1.7466-15.544 1.8297-15.544 1.8297v41.188h35.055c11.358-10.437 17.862-25.434 17.862-41.188-7e-5 -8.2433-0.87365-14.382-4.3095-21.812z" fill-opacity=".75" />
-                    <circle cx="52.917" cy="52.917" r="52.917" fill="none" stroke="#000" stroke-width="2.6458" />
-                </g>
-            </svg>
-            <div class="gauge-digital-panel">
-                <div class="gauge-gear-row">
-                    <div class="shift-light-triangle" id="shift-light-triangle"></div>
-                    <div class="sport-gear" id="val-gear">N</div>
+                </svg>
+                <div class="gauge-digital-panel"
+                    style="position: absolute; top: 57%; right: 13%; transform: translateY(-50%); z-index: 2;">
+                    <div class="gauge-gear-row">
+                        <div class="shift-light-triangle" id="shift-light-triangle"></div>
+                        <div class="sport-gear" id="val-temp">--</div>
+                    </div>
+                    <div class="sport-speed">
+                        <span id="val-temp-value">00</span>
+                        <span class="sport-speed-unit">°C</span>
+                    </div>
                 </div>
-                <div class="sport-speed">
-                    <span id="val-speed">000</span>
-                    <span class="sport-speed-unit">KM/H</span>
-                </div>
+                <div class="gauge-led-indicator" id="gauge-led-dot-temp" title="Shift Light"></div>
             </div>
-            <div class="gauge-led-indicator" id="gauge-led-dot-speed" title="Shift Light"></div>
         </div>
+
     </div>
 </div>
