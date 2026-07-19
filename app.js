@@ -694,20 +694,19 @@ function setNeedleAngle(id, pivotX, pivotY, angleDeg) {
     el.setAttribute('transform', `rotate(${angleDeg} ${pivotX} ${pivotY})`);
 }
 
-// Antes de chamar updateGaugeVisuals, atualize os valores de temperatura:
-document.getElementById('val-temp-value').innerText = Math.round(ect);
-document.getElementById('val-temp').innerText = Math.round(ect) + '°';
-
 function updateGaugeVisuals(rpm, ect, turbo, ledColor) {
-    // Acelerômetro (RPM): escala 0-8000, ângulos -170°..40°, pivô (25.797, 25.797)
+    // Manômetro grande (RPM): pivô 52.917, -170°..52°
     const rpmClamped = Math.min(Math.max(rpm, 0), 8000);
-    const rpmAngle = -170 + (rpmClamped / 8000) * (40 - -170);
-    setNeedleAngle('needle-rpm', 25.797, 25.797, rpmAngle);
+    const rpmAngle = -170 + (rpmClamped / 8000) * (52 - -170);
+    setNeedleAngle('needle-rpm', 52.917, 52.917, rpmAngle);
 
-    // Manômetro (temperatura do motor): escala 0-120°C, ângulos -170°..52°, pivô (52.917, 52.917)
+    // Accel pequeno (temperatura): pivô 25.797, -170°..40°
     const ectClamped = Math.min(Math.max(ect, 0), 120);
-    const ectAngle = -170 + (ectClamped / 120) * (52 - -170);
-    setNeedleAngle('needle-speed', 52.917, 52.917, ectAngle);
+    const ectAngle = -170 + (ectClamped / 120) * (40 - -170);
+    setNeedleAngle('needle-speed', 25.797, 25.797, ectAngle);
+
+    const elTemp = document.getElementById('val-temp-value');
+    if (elTemp) elTemp.innerText = Math.round(ect);
 
     // Triângulo de shift-light: ligado ao RPM (redline)
     const triangle = document.getElementById('shift-light-triangle');

@@ -3,7 +3,7 @@
 .panel-sport-v2 {
     display: flex;
     flex-direction: column;
-    padding: 16px;
+    padding: 8px 16px;
     min-height: 0;
     min-width: 0;
     height: 100%;
@@ -28,12 +28,12 @@
     max-width: 1160px;
     height: 100%;
     display: grid;
-    grid-template-columns: 1.7fr 1fr;
+    grid-template-columns: 3fr 1fr;
     grid-template-rows: 1fr;
     gap: 16px;
     align-items: stretch;
     justify-items: stretch;
-    padding: 12px;
+    padding: 6px 12px;
     min-height: 0;
 }
 
@@ -66,8 +66,12 @@
 }
 
 .panel-sport-v2 .gauge-card--side .gauge-visual {
-    width: 190px;
-    height: 190px;
+    width: auto;
+    height: 100%;
+    aspect-ratio: 1 / 1;
+    max-width: 100%;
+    max-height: 100%;
+    margin: 0 auto;
 }
 
 .panel-sport-v2 .gauge-svg {
@@ -76,7 +80,7 @@
     display: block;
     z-index: 1;
     filter: drop-shadow(0 0 22px rgba(0, 240, 255, 0.45));
-    
+
 }
 
 .panel-sport-v2 .sport-center-display {
@@ -208,8 +212,8 @@
 /* Painel digital do Manômetro — replicado exatamente do Manometro.jsx */
 .gauge-digital-panel {
     position: absolute;
-    top: 57%;
-    right: 13%;
+    top: 47%;
+    right: 37%;
     transform: translateY(-50%);
     display: flex;
     flex-direction: column;
@@ -431,53 +435,60 @@
     text-anchor: end;
 }
 
-
+.panel-sport-v2 .gauge-card--center .gauge-visual {
+    width: 190px;
+    height: 190px;
+}
 
 /*GearPannel*/
 
 .digitalPanel {
-        position: absolute;
-        top: 57%;
-        right: 13%;
-        transform: translateY(-50%);
-        display: flex;
-        flex-direction:  column;
-        align-items: flex-end;
-        color: red !important;
-        text-shadow: 0px 0px 5px rgba(255,255,255,0.5);
-        z-index: 999 !important;
-    }
-    .gearRow {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 15px;
-    }
-    .shiftLightTriangle {
-        width: 0;
-        height: 0;
-        border-left: 15px solid transparent;
-        border-right: 15px solid transparent;
-        border-bottom: 30px solid #ffffff;
-        transition: opacity 0.2s ease-in-out;
-        
-    }
-    .gearText {
-        font-size: 3rem;
-        font-weight: 500;
-        font-style: italic;
-    }
-    .speedText {
-        font-size: 4.5rem;
-        font-weight: 500;
-        font-style: italic;
-        line-height: 1;
-    }
-    .kmhText {
-        font-size: 2rem;
-        color: #ccc;
-        letter-spacing: 2px;
-        margin-top: 2px;
-        padding-right: 5px;
-    }
+    position: absolute;
+    top: 57%;
+    right: 13%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    color: red !important;
+    text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.5);
+    z-index: 999 !important;
+}
 
+.gearRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.shiftLightTriangle {
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 30px solid #ffffff;
+    transition: opacity 0.2s ease-in-out;
+
+}
+
+.gearText {
+    font-size: 3rem;
+    font-weight: 500;
+    font-style: italic;
+}
+
+.speedText {
+    font-size: 4.5rem;
+    font-weight: 500;
+    font-style: italic;
+    line-height: 1;
+}
+
+.kmhText {
+    font-size: 2rem;
+    color: #ccc;
+    letter-spacing: 2px;
+    margin-top: 2px;
+    padding-right: 5px;
+}

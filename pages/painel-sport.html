@@ -121,7 +121,7 @@
                             <path transform="matrix(-.53451 .029878 -.029878 -.53451 80.289 121.34)"
                                 d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" />
                         </g>
-                        <g id="needle-speed" transform="rotate(-170 52.917 52.917)">
+                        <g id="needle-rpm" transform="rotate(-170 52.917 52.917)">
                             <path
                                 d="m50.917 8.2021-1.9999 2.9999 1.9999 3.0001 2.0001 4 2.0001-4 1.9999-3.0001-1.9999-2.9999zm0.60007 0.84667 2.8-1e-6 1e-6 4.2001-2.8 1e-6z"
                                 fill="#fff" filter="url(#filter208)" stroke-width="0" />
@@ -132,23 +132,16 @@
                         <circle cx="52.917" cy="52.917" r="52.917" fill="none" stroke="#000" stroke-width="2.6458" />
                     </g>
                 </svg>
-            
-
-                <div class="digitalPanel">
-                    <div class="gearRow">
-                        <div class="shiftLightTriangle" 
-                            style=" opacity: rpm > 5000 ? 1 : 0.1, 
-                    animation: rpm > 7000 ? 'freneticBlink 0.1s infinite' : 'none' "
-                        ></div>
-                        <div class="gearText">8</div>
+                <div class="gauge-digital-panel">
+                    <div class="gauge-gear-row">
+                        <div class="shift-light-triangle" id="shift-light-triangle"></div>
+                        <div class="sport-gear" id="val-gear">N</div>
                     </div>
-
-                    <div class="speedText">390</div>
-                    <div class="kmhText">KM/H</div>
+                    <div class="sport-speed">
+                        <span id="val-speed">000</span>
+                        <span class="sport-speed-unit">KM/H</span>
+                    </div>
                 </div>
-
-
-
             </div>
 
 
@@ -227,22 +220,16 @@
                             <path transform="matrix(.41118 .34281 -.34281 .41118 35.542 -26.686)"
                                 d="m48.937 46.794-3.6952-6.439 7.424 0.01933z" filter="url(#accel-filter3)" />
                         </g>
-                        <g id="needle-rpm" transform="rotate(-170 25.797 25.797)">
+                        <g id="needle-speed" transform="rotate(-170 25.797 25.797)">
                             <path
                                 d="m23.797 4.3315-1.9999 2.9999 1.9999 3.0001 2.0001 4 2.0001-4 1.9999-3.0001-1.9999-2.9999zm0.60007 0.84667 2.8-1e-6 1e-6 4.2001-2.8 1e-6z"
                                 fill="#fff" filter="url(#accel-filter208)" stroke-width="0" />
                         </g>
                     </g>
                 </svg>
-                <div class="gauge-digital-panel"
-                    style="position: absolute; top: 57%; right: 13%; transform: translateY(-50%); z-index: 2;">
+                <div class="gauge-digital-panel">
                     <div class="gauge-gear-row">
-                        <div class="shift-light-triangle" id="shift-light-triangle"></div>
-                        <div class="sport-gear" id="val-temp">--</div>
-                    </div>
-                    <div class="sport-speed">
-                        <span id="val-temp-value">00</span>
-                        <span class="sport-speed-unit">°C</span>
+                        <div class="sport-gear" id="val-gear">N</div>
                     </div>
                 </div>
                 <div class="gauge-led-indicator" id="gauge-led-dot-temp" title="Shift Light"></div>
