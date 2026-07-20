@@ -65,8 +65,18 @@ let obdConnected = false;
 let gearConfig = JSON.parse(localStorage.getItem('ft_config_gear') || 'null')
     || { ratios: [3.58, 1.93, 1.41, 1.11, 0.88], diff: 4.25, perimeter: 1.83 };
 
+function generateUUID() {
+    if (crypto.randomUUID) return crypto.randomUUID();
+    // fallback p/ contexto inseguro (http://IP): usa getRandomValues
+    const b = crypto.getRandomValues(new Uint8Array(16));
+    b[6] = (b[6] & 0x0f) | 0x40; // versão 4
+    b[8] = (b[8] & 0x3f) | 0x80; // variante
+    const h = [...b].map(x => x.toString(16).padStart(2, '0'));
+    return `${h.slice(0, 4).join('')}-${h.slice(4, 6).join('')}-${h.slice(6, 8).join('')}-${h.slice(8, 10).join('')}-${h.slice(10, 16).join('')}`;
+}
+
 const deviceId = localStorage.getItem('ft_device_id') || (() => {
-    const id = crypto.randomUUID();
+    const id = generateUUID();
     localStorage.setItem('ft_device_id', id);
     return id;
 })();
@@ -698,12 +708,12 @@ function updateGaugeVisuals(rpm, ect, turbo, ledColor) {
     // Manômetro grande (RPM): pivô 52.917, -170°..52°
     const rpmClamped = Math.min(Math.max(rpm, 0), 8000);
     const rpmAngle = -170 + (rpmClamped / 8000) * (52 - -170);
-    setNeedleAngle('needle-rpm', 52.917, 52.917, rpmAngle);
+    setNeedleAngle('needle-speed', 52.917, 52.917, rpmAngle);
 
     // Accel pequeno (temperatura): pivô 25.797, -170°..40°
     const ectClamped = Math.min(Math.max(ect, 0), 120);
     const ectAngle = -170 + (ectClamped / 120) * (40 - -170);
-    setNeedleAngle('needle-speed', 25.797, 25.797, ectAngle);
+    setNeedleAngle('needle-rpm', 25.797, 25.797, ectAngle);
 
     const elTemp = document.getElementById('val-temp-value');
     if (elTemp) elTemp.innerText = Math.round(ect);
