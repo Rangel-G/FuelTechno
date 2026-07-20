@@ -1,16 +1,26 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap");
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(2, 8, 16, 0.96), rgba(0, 0, 0, 0.91));
+}
 
 .panel-sport-v2 {
     display: flex;
     flex-direction: column;
-    padding: 8px 16px;
-    min-height: 0;
-    min-width: 0;
-    height: 100%;
-    overflow: hidden;
-    background: linear-gradient(180deg, rgba(2, 8, 16, 0.96), rgba(0, 0, 0, 0.91));
+    width: 100vw;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
     border: 1px solid rgba(0, 255, 255, 0.12);
     box-shadow: inset 0 0 40px rgba(0, 255, 255, 0.08);
+    padding: 10px;
 }
 
 .page-content.panel-sport-v2.active-page {
@@ -18,59 +28,58 @@
     flex-direction: column;
     width: 100%;
     height: 100%;
-    min-height: 100%;
     justify-content: center;
     align-items: center;
 }
 
+/* Divisão exata da tela: 3/5 para a esquerda e 2/5 para a direita */
 .panel-sport-v2 .dashboard {
     width: 100%;
-    max-width: 1160px;
     height: 100%;
     display: grid;
-    grid-template-columns: 3fr 1fr;
-    grid-template-rows: 1fr;
+    grid-template-columns: 3fr 2fr;
     gap: 16px;
-    align-items: stretch;
-    justify-items: stretch;
-    padding: 6px 12px;
+    align-items: center;
+    justify-items: center;
+    box-sizing: border-box;
+    min-width: 0;
     min-height: 0;
 }
 
 .panel-sport-v2 .gauge-card {
     position: relative;
-    overflow: hidden;
+    width: 100%;
+    height: 100%;
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 0;
+    overflow: hidden;
+    min-width: 0;
     min-height: 0;
 }
 
-.panel-sport-v2 .gauge-card--center {
-    min-height: 260px;
-}
-
-.panel-sport-v2 .gauge-card--side {
-    min-height: 220px;
-}
-
-.panel-sport-v2 .gauge-visual {
-    position: relative;
-    width: 380px;
-    height: 380px;
-    
-    
-    margin: 0;
-}
-
+/* 1º Gauge: Define a variável de tamanho base (--gauge-size) */
 .panel-sport-v2 .gauge-card--side .gauge-visual {
-    width: 380px;
-    height: 380px;
-    
-    
-    margin: 0;
+    --gauge-size: min(90vw * 0.6, 90vh * 0.9, 500px);
+    position: relative;
+    width: var(--gauge-size);
+    height: var(--gauge-size);
+    aspect-ratio: 1 / 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 2º Gauge: O tamanho é 75% do primeiro, redimensionando a variável automaticamente */
+.panel-sport-v2 .gauge-card--center .gauge-visual {
+    --gauge-size: calc(min(90vw * 0.6, 90vh * 0.9, 500px) * 0.75);
+    position: relative;
+    width: var(--gauge-size);
+    height: var(--gauge-size);
+    aspect-ratio: 1 / 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .panel-sport-v2 .gauge-svg {
@@ -78,369 +87,10 @@
     height: 100%;
     display: block;
     z-index: 1;
-    filter: drop-shadow(0 0 22px rgba(0, 240, 255, 0.45));
-
+    filter: drop-shadow(0 0 2.2vmin rgba(0, 240, 255, 0.45));
 }
 
-.panel-sport-v2 .sport-center-display {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    pointer-events: none;
-    z-index: 2;
-}
-
-.panel-sport-v2 .gauge-footer {
-    position: relative;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding-top: 10px;
-    z-index: 2;
-}
-
-.panel-sport-v2 .gauge-label {
-    color: #8be8ff;
-    font-size: 0.78rem;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-}
-
-.panel-sport-v2 .gauge-value {
-    color: #ffffff;
-    font-size: 1.5rem;
-    font-weight: 900;
-}
-
-.panel-sport-v2 .gauge-led-indicator {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.9);
-    border: 2px solid rgba(0, 240, 255, 0.85);
-    box-shadow: 0 0 16px rgba(0, 240, 255, 0.5);
-    z-index: 2;
-}
-
-@media (max-width: 940px) {
-    .panel-sport-v2 .dashboard {
-        grid-template-columns: 1fr;
-    }
-
-    .panel-sport-v2 .gauge-card--center,
-    .panel-sport-v2 .gauge-card--side {
-        min-height: auto;
-    }
-}
-
-.sport-ring {
-    fill: none;
-    stroke: url(#sport-ring-grad);
-    stroke-width: 18;
-    filter: drop-shadow(0 0 40px rgba(69, 243, 255, 0.35));
-}
-
-.sport-inner {
-    fill: rgba(3, 16, 40, 0.92);
-    stroke: rgba(33, 149, 255, 0.22);
-    stroke-width: 3;
-}
-
-.sport-face {
-    fill: #0f487c;
-}
-
-.sport-face,
-.sport-ring,
-.sport-inner {
-    filter: drop-shadow(0 0 40px rgba(0, 117, 255, 0.15));
-}
-
-.sport-eye {
-    fill: #ffffff;
-    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.35));
-}
-
-.sport-mouth {
-    fill: none;
-    stroke: #ffffff;
-    stroke-width: 10;
-    stroke-linecap: round;
-}
-
-.sport-ear,
-.sport-ear-right {
-    fill: #0f487c;
-}
-
-.sport-throttle-track {
-    fill: none;
-    stroke: rgba(255, 255, 255, 0.1);
-    stroke-width: 24;
-    stroke-linecap: round;
-}
-
-.sport-throttle-arc {
-    fill: none;
-    stroke: url(#sport-arc-grad);
-    stroke-width: 24;
-    stroke-linecap: round;
-    stroke-dasharray: 0 1000;
-    transform-origin: center;
-}
-
-.sport-gauge-center {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    pointer-events: none;
-    z-index: 3;
-}
-
-/* Painel digital do Manômetro — replicado exatamente do Manometro.jsx */
-.gauge-digital-panel {
-    position: absolute;
-    top: 47%;
-    right: 37%;
-    transform: translateY(-50%);
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    color: #ffffff;
-    text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.5);
-    z-index: 2;
-    pointer-events: none;
-}
-
-.gauge-gear-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 15px;
-}
-
-.shift-light-triangle {
-    width: 0;
-    height: 0;
-    border-left: 15px solid transparent;
-    border-right: 15px solid transparent;
-    border-bottom: 30px solid #ffffff;
-    opacity: 0.1;
-    transition: opacity 0.2s ease-in-out;
-}
-
-.shift-light-triangle.shift-light-triangle--active {
-    opacity: 1;
-    animation: shiftLightBlink 0.1s infinite;
-}
-
-.sport-gear {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 3rem;
-    font-weight: 500;
-    font-style: italic;
-    color: #ffffff;
-    letter-spacing: 0.32em;
-    text-shadow: 0 0 24px rgba(255, 255, 255, 0.2);
-    margin-bottom: 0;
-}
-
-.sport-speed {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    margin-top: 0;
-}
-
-.sport-speed #val-speed {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 4.5rem;
-    font-weight: 500;
-    font-style: italic;
-    color: #ffffff;
-    letter-spacing: -0.06em;
-    text-shadow: 0 0 30px rgba(255, 255, 255, 0.18);
-    line-height: 1;
-    margin: 0;
-}
-
-.sport-speed-unit {
-    display: block;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 2rem;
-    color: #cccccc;
-    letter-spacing: 2px;
-    margin-top: 2px;
-    padding-right: 5px;
-}
-
-@media (max-width: 940px) {
-    .panel-sport-v2 .dashboard {
-        grid-template-columns: 1fr;
-    }
-
-    .panel-sport-v2 .gauge-card--center {
-        grid-column: auto;
-    }
-}
-
-.panel-sport-v2 .gauge-svg,
-.panel-sport-v2 .gauge-footer,
-.panel-sport-v2 .digital-box,
-.panel-sport-v2 .gauge-led-indicator {
-    position: relative;
-    z-index: 2;
-}
-
-.panel-sport-v2 .gauge-svg image {
-    opacity: 0.0;
-    visibility: hidden;
-}
-
-.panel-sport-v2 .gauge-shell {
-    fill: #061117;
-    stroke: rgba(31, 255, 255, 0.18);
-    stroke-width: 2;
-}
-
-.panel-sport-v2 .gauge-arc {
-    fill: none;
-    stroke: url(#gauge-glow);
-    stroke-width: 16;
-    stroke-linecap: round;
-    filter: drop-shadow(0 0 24px rgba(0, 240, 255, 0.55));
-}
-
-.panel-sport-v2 .gauge-tick {
-    stroke: rgba(125, 255, 255, 0.9);
-    stroke-width: 2;
-}
-
-.panel-sport-v2 .gauge-major-tick {
-    stroke-width: 4;
-}
-
-.panel-sport-v2 .gauge-tick+.tick-text,
-.panel-sport-v2 .gauge-tick+.tick-text.red,
-.panel-sport-v2 .gauge-major-tick+.tick-text,
-.panel-sport-v2 .tick-text {
-    opacity: 0.95;
-}
-
-.panel-sport-v2 .tick-text {
-    fill: #00f0ff;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 18px;
-    font-weight: 900;
-    text-anchor: middle;
-    dominant-baseline: middle;
-    filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.9));
-}
-
-.panel-sport-v2 .tick-text.red {
-    fill: #ff0055;
-    filter: drop-shadow(0 0 16px rgba(255, 0, 85, 0.9));
-}
-
-.panel-sport-v2 .gauge-needle {
-    stroke: #ff0055;
-    stroke-width: 6;
-    stroke-linecap: round;
-    filter: drop-shadow(0 0 16px rgba(255, 0, 85, 0.8));
-}
-
-.panel-sport-v2 .gauge-hub {
-    fill: #0d1116;
-    stroke: #00f0ff;
-    stroke-width: 3;
-    filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.85));
-}
-
-.panel-sport-v2 .gauge-center-ring {
-    fill: none;
-    stroke: rgba(0, 240, 255, 0.45);
-    stroke-width: 2;
-    filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.35));
-}
-
-.panel-sport-v2 .digital-box {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.85);
-    border: 1px solid rgba(0, 240, 255, 0.35);
-    padding: 6px 14px;
-    border-radius: 10px;
-    box-shadow: 0 0 18px rgba(0, 240, 255, 0.25);
-}
-
-.panel-sport-v2 .digital-rpm {
-    color: #ffffff;
-    font-size: 1.6rem;
-    font-weight: 900;
-    letter-spacing: 2px;
-    text-shadow: 0 0 12px rgba(0, 240, 255, 0.8);
-}
-
-.panel-sport-v2 .gauge-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 14px 14px;
-    flex-shrink: 0;
-}
-
-.panel-sport-v2 .gauge-label {
-    color: #8be8ff;
-    font-size: 0.78rem;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-}
-
-.panel-sport-v2 .gauge-value {
-    color: #ffffff;
-    font-size: 1.5rem;
-    font-weight: 900;
-}
-
-.panel-sport-v2 .gauge-led-indicator {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.9);
-    border: 2px solid rgba(0, 240, 255, 0.85);
-    box-shadow: 0 0 16px rgba(0, 240, 255, 0.5);
-}
-
-.panel-sport-v2 .gauge-max-text {
-    fill: #7dd5ff;
-    font-size: 10px;
-    letter-spacing: 1px;
-    text-anchor: end;
-}
-
-.panel-sport-v2 .gauge-card--center .gauge-visual {
-    width: 190px;
-    height: 190px;
-}
-
-/*GearPannel*/
-
+/* Painel Digital do 1º Gauge (Fontes proporcionais ao tamanho do gauge) */
 .digitalPanel {
     position: absolute;
     top: 57%;
@@ -452,41 +102,110 @@
     color: red !important;
     text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.5);
     z-index: 999 !important;
+    pointer-events: none;
 }
 
 .gearRow {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 15px;
+    gap: calc(var(--gauge-size, 300px) * 0.02);
+    margin-bottom: calc(var(--gauge-size, 300px) * 0.03);
 }
 
 .shiftLightTriangle {
     width: 0;
     height: 0;
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    border-bottom: 20px solid #ffffff;
+    border-left: calc(var(--gauge-size, 300px) * 0.03) solid transparent;
+    border-right: calc(var(--gauge-size, 300px) * 0.03) solid transparent;
+    border-bottom: calc(var(--gauge-size, 300px) * 0.06) solid #ffffff;
     transition: opacity 0.2s ease-in-out;
-
 }
 
 .gearText {
-    font-size: 1.5rem;
+    font-size: calc(var(--gauge-size, 300px) * 0.13);
     font-weight: 500;
     font-style: italic;
+    color: #ffffff;
 }
 
 .speedText {
-    font-size: 2.5rem;
+    font-size: calc(var(--gauge-size, 300px) * 0.2);
     font-weight: 500;
     font-style: italic;
     line-height: 1;
+    color: #ffffff;
 }
 
 .kmhText {
-    font-size: 1.25rem;
+    font-size: calc(var(--gauge-size, 300px) * 0.07);
     color: #ccc;
+    letter-spacing: 2px;
+    margin-top: 2px;
+    padding-right: 5px;
+}
+
+/* Painel Digital do 2º Gauge (Com background translúcido, border-radius e fontes proporcionais) */
+.panel-sport-v2 .gauge-card--center .gauge-digital-panel {
+    position: absolute;
+    top: 57%;
+    right: 10% !important;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    color: #ffffff;
+    text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.5);
+    z-index: 2;
+    pointer-events: none;
+    background-color: rgba(0, 0, 0, 0.5); /* Preto com 50% de transparência */
+    border-radius: 12px; /* Cantos arredondados */
+    padding: calc(var(--gauge-size, 300px) * 0.04); /* Padding proporcional */
+}
+
+.panel-sport-v2 .gauge-card--center .gauge-gear-row {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--gauge-size, 300px) * 0.02);
+    margin-bottom: calc(var(--gauge-size, 300px) * 0.03);
+}
+
+.panel-sport-v2 .gauge-card--center .shift-light-triangle {
+    width: 0;
+    height: 0;
+    border-left: calc(var(--gauge-size, 300px) * 0.03) solid transparent;
+    border-right: calc(var(--gauge-size, 300px) * 0.03) solid transparent;
+    border-bottom: calc(var(--gauge-size, 300px) * 0.06) solid #ffffff;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.sport-gear {
+    font-size: calc(var(--gauge-size, 300px) * 0.13);
+    font-weight: 500;
+    font-style: italic;
+    color: #ffffff;
+    letter-spacing: 0.15em;
+}
+
+.sport-speed {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-top: 0;
+}
+
+.sport-speed #val-temp-value {
+    font-size: calc(var(--gauge-size, 300px) * 0.2);
+    font-weight: 500;
+    font-style: italic;
+    color: #ffffff;
+    line-height: 1;
+    margin: 0;
+}
+
+.sport-speed-unit {
+    display: block;
+    font-size: calc(var(--gauge-size, 300px) * 0.07);
+    color: #cccccc;
     letter-spacing: 2px;
     margin-top: 2px;
     padding-right: 5px;
