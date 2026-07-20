@@ -60,7 +60,7 @@ body {
 
 /* 1º Gauge: Define a variável de tamanho base (--gauge-size) */
 .panel-sport-v2 .gauge-card--side .gauge-visual {
-    --gauge-size: min(90vw * 0.6, 90vh * 0.9);
+    --gauge-size: min(90vw * 0.6, 90vh * 1.9);
     position: relative;
     width: var(--gauge-size);
     height: var(--gauge-size);
@@ -87,7 +87,7 @@ body {
     height: 70%;
     display: block;
     z-index: 1;
-    filter: drop-shadow(0 0 2.2vmin rgba(0, 240, 255, 0.45));
+    filter: drop-shadow(0 0 2.2vmin rgba(0, 240, 255, 0.80));
     max-width: none; /* neutraliza o cap de 220px vindo do style.css global */
     max-height: none;
 }
@@ -129,6 +129,7 @@ body {
     font-style: italic;
     color: #ffffff;
     line-height: 1;
+    padding-right: 10px;
 }
 
 .speedText {
@@ -137,14 +138,15 @@ body {
     font-style: italic;
     line-height: 1;
     color: #ffffff;
+    padding-right: 20px;
 }
 
 .kmhText {
     font-size: calc(var(--gauge-size, 300px) * 0.07);
     color: #ccc;
     letter-spacing: 2px;
-    padding-right: 5px;
-    margin-top:0;
+    padding-right: 52px;
+    margin-top: 0;
 }
 
 /* Painel Digital do 2º Gauge (Com background translúcido, border-radius e fontes proporcionais) */
