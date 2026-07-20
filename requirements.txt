@@ -10,7 +10,7 @@ bleak>=3.0.2
 bleak-retry-connector>=4.6.1
 
 # Comunicação WebSocket entre bridge.py e interface
-websockets>=15.0
+websockets>=16.1
 
 # Servidor HTTP (caso utilizado)
 Flask>=3.1.0
@@ -19,12 +19,12 @@ Flask-Cors>=6.0.0
 # Variáveis de ambiente (.env)
 python-dotenv>=1.1.0
 
-# Janela nativa do app único (main.py) — usada para abrir a interface
-# sem precisar de navegador/CMD, e é a base para gerar o .exe
-pywebview>=5.0
-# Comunicação direta com o driver D2XX da FTDI (mesmo mecanismo do FORScan,
-# conecta pelo número de série do chip, sem depender de porta COM/VCP)
+# Janela nativa do app único (main.py) — abre a interface sem navegador/CMD
+# e é a base para gerar o .exe
+pywebview>=6.2.1
+# Driver D2XX da FTDI (mesmo mecanismo do FORScan; conecta pelo serial do chip,
+# sem depender de porta COM/VCP)
 ftd2xx>=1.3.3
 
 # Cloud Firestore (sincronismo de configurações via Admin SDK)
-firebase-admin>=6.5.0
+firebase-admin>=7.5.0
