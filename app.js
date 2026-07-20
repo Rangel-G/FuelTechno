@@ -724,10 +724,10 @@ function updateGaugeVisuals(rpm, ect, turbo, ledColor) {
     if (triangle) triangle.classList.toggle('shift-light-triangle--active', rpm >= currentRedlineRpm);
 
     if (ledColor) {
-        const glow = `rgb(${ledColor[0]}, ${ledColor[1]}, ${ledColor[2]})`;
-        if (glow !== _lastGlow) {
-            _lastGlow = glow;
-            document.documentElement.style.setProperty('--gauge-glow', glow);
+        const glowRgb = `${ledColor[0]}, ${ledColor[1]}, ${ledColor[2]}`;
+        if (glowRgb !== _lastGlow) {
+            _lastGlow = glowRgb;
+            document.documentElement.style.setProperty('--glow-rgb', glowRgb);
         }
         document.querySelectorAll('.gauge-led-indicator').forEach(dot => {
             dot.style.background = `rgb(${ledColor[0]}, ${ledColor[1]}, ${ledColor[2]})`;
@@ -735,6 +735,8 @@ function updateGaugeVisuals(rpm, ect, turbo, ledColor) {
         });
     }
 }
+
+
 
 // ==========================================
 // COMUNICAÇÃO WEBSOCKET E INICIALIZAÇÃO
@@ -790,7 +792,7 @@ function connectWebSocket() {
             document.getElementById('ecu-mode').className = "status-left";
         }
 
-        renderEcuUI(data.rpm, data.speed, data.map, data.ect, data.fpress, data.fpress_avail, data.load, data.battery, data.fuel, data.mil_on, data.dtc_count);
+        renderEcuUI(data.rpm, data.speed, data.map, data.ect, data.fpress, data.fpress_avail, data.load, data.battery, data.fuel, data.mil_on, data.dtc_count, data.led_color);
     };
 
     socket.onclose = () => {

@@ -10,7 +10,7 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Courier New', Courier, monospace;
+    font-family: "Courier New", Courier, monospace;
     user-select: none;
 }
 
@@ -172,7 +172,7 @@ body {
 }
 
 .ecu-brand span {
-    color: #ff3b30;
+    color: rgba(var(--glow-rgb, 0, 255, 42), 1);
 }
 
 /* ==========================================
@@ -218,14 +218,12 @@ body {
     background-color: transparent;
 }
 
-
-
 /* ALTERADO: fonte maior para acompanhar a tela cheia */
 .rpm-text-overlay {
     position: absolute;
     left: 60px;
     top: 4px;
-    font-family: 'Arial Black', sans-serif;
+    font-family: "Arial Black", sans-serif;
     font-weight: 900;
     font-size: 64px;
     color: #ffffff;
@@ -241,7 +239,7 @@ body {
 }
 
 .rpm-unit-mini {
-    font-family: 'Arial', sans-serif;
+    font-family: "Arial", sans-serif;
     font-size: 20px;
     font-weight: bold;
     color: #ffffff;
@@ -278,7 +276,7 @@ body {
 }
 
 .status-left::before {
-    content: '';
+    content: "";
     display: inline-block;
     width: 8px;
     height: 8px;
@@ -396,7 +394,7 @@ body {
 .layout-default #box-gear .channel-value {
     color: #ffcc00;
     text-align: center;
-    font-family: 'Arial Black', sans-serif;
+    font-family: "Arial Black", sans-serif;
     font-size: 50px;
 }
 
@@ -420,7 +418,7 @@ body {
 .layout-diario #box-gear .channel-value {
     color: #ffcc00;
     text-align: center;
-    font-family: 'Arial Black', sans-serif;
+    font-family: "Arial Black", sans-serif;
     font-size: 52px;
 }
 
@@ -443,7 +441,7 @@ body {
 .layout-rua #box-gear .channel-value {
     color: #ffcc00;
     text-align: center;
-    font-family: 'Arial Black', sans-serif;
+    font-family: "Arial Black", sans-serif;
     font-size: 50px;
 }
 
@@ -763,7 +761,8 @@ body {
     grid-template-columns: repeat(4, 1fr);
 }
 
-.box-pressure {}
+.box-pressure {
+}
 
 /* ==========================================
    AJUSTES V2 — PAINÉIS DE CONFIGURAÇÃO
@@ -907,7 +906,9 @@ body {
 .config-panel-body {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease, padding 0.3s ease;
+    transition:
+        max-height 0.3s ease,
+        padding 0.3s ease;
     padding: 0 12px;
 }
 
@@ -939,7 +940,7 @@ body {
     border: 1px solid #2a2a34;
     border-radius: 4px;
     color: #fff;
-    font-family: 'Courier New', Courier, monospace;
+    font-family: "Courier New", Courier, monospace;
     font-size: 12px;
     padding: 6px 10px;
     outline: none;
@@ -1015,7 +1016,7 @@ body {
     background: #1a2e1a;
     border: 1px solid #2a4a2a;
     color: #34c759;
-    font-family: 'Courier New', Courier, monospace;
+    font-family: "Courier New", Courier, monospace;
     font-size: 11px;
     font-weight: bold;
     padding: 5px 12px;
@@ -1062,7 +1063,7 @@ body {
     border: 1px solid #ff5a4a;
     border-radius: 4px;
     color: #fff;
-    font-family: 'Courier New', Courier, monospace;
+    font-family: "Courier New", Courier, monospace;
     font-size: 12px;
     font-weight: bold;
     text-transform: uppercase;
@@ -1213,7 +1214,7 @@ body {
 .gauge-scale-text {
     fill: #666;
     font-size: 11px;
-    font-family: 'Courier New', monospace;
+    font-family: "Courier New", monospace;
     font-weight: bold;
 }
 
