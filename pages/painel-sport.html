@@ -135,10 +135,10 @@
 
                 <div class="digitalPanel">
                     <div class="gearRow">
-                        <div class="shiftLightTriangle"></div>
-                        <div class="gearText">N</div>
+                        <div class="shiftLightTriangle" id="shift-light-triangle"></div>
+                        <div class="gearText" id="val-gear">N</div>
                     </div>
-                    <div class="speedText">0</div>
+                    <div class="speedText" id="val-speed">0</div>
                     <div class="kmhText">KM/H</div>
                 </div>
             </div>
@@ -224,8 +224,8 @@
                 </svg>
                 <div class="gauge-digital-panel"
                     style="position: absolute; top: 57%; right: 13%; transform: translateY(-50%); z-index: 2;">
-                    <div class="sport-speed">
-                        <span id="val-temp-value">50</span>
+                    <div class="sport-temp">
+                        <span id="val-temp-value" class="textTemp">0</span>
                         <span class="sport-speed-unit">°C</span>
                     </div>
                 </div>

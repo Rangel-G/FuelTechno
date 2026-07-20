@@ -53,6 +53,7 @@ const MAP_SLUGS = {
     'Sport': 'sport',
 };
 
+let _lastGlow = null;
 let currentActiveMapName = 'Diário';
 let tractionControlActive = true;
 let socket = null;
@@ -723,6 +724,11 @@ function updateGaugeVisuals(rpm, ect, turbo, ledColor) {
     if (triangle) triangle.classList.toggle('shift-light-triangle--active', rpm >= currentRedlineRpm);
 
     if (ledColor) {
+        const glow = `rgb(${ledColor[0]}, ${ledColor[1]}, ${ledColor[2]})`;
+        if (glow !== _lastGlow) {
+            _lastGlow = glow;
+            document.documentElement.style.setProperty('--gauge-glow', glow);
+        }
         document.querySelectorAll('.gauge-led-indicator').forEach(dot => {
             dot.style.background = `rgb(${ledColor[0]}, ${ledColor[1]}, ${ledColor[2]})`;
             dot.style.boxShadow = `0 0 16px rgba(${ledColor[0]}, ${ledColor[1]}, ${ledColor[2]}, 0.8)`;

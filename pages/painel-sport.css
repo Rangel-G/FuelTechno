@@ -87,7 +87,7 @@ body {
     height: 70%;
     display: block;
     z-index: 1;
-    filter: drop-shadow(0 0 2.2vmin rgba(0, 240, 255, 0.80));
+    filter: drop-shadow(0 0 2.2vmin var(--gauge-glow, rgba(0, 255, 42, 0.8)));
     max-width: none; /* neutraliza o cap de 220px vindo do style.css global */
     max-height: none;
 }
@@ -112,6 +112,7 @@ body {
     align-items: center;
     gap: calc(var(--gauge-size, 300px) * 0.02);
     margin-bottom: 0;
+    padding-right: 8%;
 }
 
 .shiftLightTriangle {
@@ -129,23 +130,23 @@ body {
     font-style: italic;
     color: #ffffff;
     line-height: 1;
-    padding-right: 10px;
+    padding-right: 15%;
 }
 
 .speedText {
-    font-size: calc(var(--gauge-size, 300px) * 0.2);
+    font-size: calc(var(--gauge-size, 300px) * 0.15);
     font-weight: 500;
     font-style: italic;
     line-height: 1;
     color: #ffffff;
-    padding-right: 20px;
+    padding-right: 10%;
 }
 
 .kmhText {
     font-size: calc(var(--gauge-size, 300px) * 0.07);
     color: #ccc;
     letter-spacing: 2px;
-    padding-right: 52px;
+    padding-right: 40%;
     margin-top: 0;
 }
 
@@ -183,6 +184,22 @@ body {
     transition: opacity 0.2s ease-in-out;
 }
 
+.panel-sport-v2 .gauge-card--center .sport-temp {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-top: 0;
+}
+
+.panel-sport-v2 .gauge-card--center .textTemp {
+    font-size: calc(var(--gauge-size, 300px) * 0.2);
+    font-weight: 500;
+    font-style: italic;
+    color: #ffffff;
+    line-height: 1;
+    margin: 0;
+}
+
 .sport-gear {
     font-size: calc(var(--gauge-size, 300px) * 0.13);
     font-weight: 500;
@@ -196,15 +213,6 @@ body {
     flex-direction: column;
     align-items: flex-end;
     margin-top: 0;
-}
-
-.sport-speed #val-temp-value {
-    font-size: calc(var(--gauge-size, 300px) * 0.2);
-    font-weight: 500;
-    font-style: italic;
-    color: #ffffff;
-    line-height: 1;
-    margin: 0;
 }
 
 .sport-speed-unit {
