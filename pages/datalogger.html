@@ -1,4 +1,4 @@
-<div id="page-datalogger" class="page-content datalogger-view active-page">
+<div id="page-datalogger" class="dyno-page">
     <!-- =========================================================
          DYNO INERCIAL — Potência (rel.) vs Torque (rel.) x RPM
          Torque ∝ dRPM/dt  |  Potência ∝ Torque × RPM
@@ -23,8 +23,14 @@
     </div>
 
     <style>
+        .dyno-page {
+            height: 100% ;
+            width: 100% ;
+        }
+
         .dyno-wrap {
-            margin-top: 14px;
+            height: 100% ;
+            width: 100% ;
             padding: 12px;
             border-radius: 12px;
             background: #10131a;
@@ -70,7 +76,7 @@
 
         .dyno-canvas-box {
             width: 100%;
-            height: 280px;
+            height: 80%;
             background: #0b0e14;
             border-radius: 8px;
             overflow: hidden;
