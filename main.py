@@ -32,6 +32,7 @@ import firestore_client  # reaproveita toda a lógica existente do bridge.py
 
 HTTP_PORT = 8000
 
+logging.getLogger("firestore_client").setLevel(logging.DEBUG)
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
 )

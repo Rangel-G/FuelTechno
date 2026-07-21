@@ -1,23 +1,108 @@
 <div id="page-datalogger" class="page-content datalogger-view active-page">
-    <div class="log-row">
-        <div class="log-info"><span>Frequência Interna</span><span id="log-txt-rpm">0 RPM</span>
+    <!-- =========================================================
+         DYNO INERCIAL — Potência (rel.) vs Torque (rel.) x RPM
+         Torque ∝ dRPM/dt  |  Potência ∝ Torque × RPM
+         Curvas em % do pico. Faça uma puxada WOT em marcha fixa.
+    ========================================================== -->
+    <div class="dyno-wrap">
+        <div class="dyno-head">
+            <span class="dyno-title">Puxada (Dyno Inercial)</span>
+            <span class="dyno-hint">Acelere de baixa até o corte, numa marcha só.</span>
         </div>
-        <div class="log-bar-bg">
-            <div id="log-bar-rpm" class="log-bar-fill" style="background:#00ff66;"></div>
+
+        <div class="dyno-peaks">
+            <span class="dyno-peak dyno-peak-pw" id="dyno-peak-pw">Potência pico: —</span>
+            <span class="dyno-peak dyno-peak-tq" id="dyno-peak-tq">Torque pico: —</span>
         </div>
+
+        <div class="dyno-canvas-box">
+            <canvas id="dyno-canvas"></canvas>
+        </div>
+
+        <button id="dyno-clear" class="dyno-clear-btn" type="button">Limpar</button>
     </div>
-    <div class="log-row">
-        <div class="log-info"><span>Pressão de Admissão</span><span id="log-txt-map">0.00 BAR</span>
-        </div>
-        <div class="log-bar-bg">
-            <div id="log-bar-map" class="log-bar-fill" style="background:#00fffa;"></div>
-        </div>
-    </div>
-    <div class="log-row">
-        <div class="log-info"><span>Sensor de Temperatura (Water)</span><span id="log-txt-ect">0
-                °C</span></div>
-        <div class="log-bar-bg">
-            <div id="log-bar-ect" class="log-bar-fill" style="background:#ff9500;"></div>
-        </div>
-    </div>
+
+    <style>
+        .dyno-wrap {
+            margin-top: 14px;
+            padding: 12px;
+            border-radius: 12px;
+            background: #10131a;
+            border: 1px solid #232a36;
+        }
+
+        .dyno-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .dyno-title {
+            color: #e9edf5;
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .dyno-hint {
+            color: #7c8698;
+            font-size: 12px;
+        }
+
+        .dyno-peaks {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .dyno-peak-pw {
+            color: #ff5a4d;
+        }
+
+        .dyno-peak-tq {
+            color: #3b82ff;
+        }
+
+        .dyno-canvas-box {
+            width: 100%;
+            height: 280px;
+            background: #0b0e14;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        #dyno-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .dyno-clear-btn {
+            margin-top: 12px;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #e11d2a;
+            color: #fff;
+            font-weight: 700;
+            font-size: 15px;
+            letter-spacing: 0.4px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .dyno-clear-btn:hover {
+            background: #c01521;
+        }
+
+        .dyno-clear-btn:active {
+            background: #9c1019;
+        }
+    </style>
 </div>

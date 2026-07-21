@@ -21,6 +21,8 @@ const labels = {
     fuel: document.getElementById('lbl-fuel')
 };
 
+
+
 const uiComponents = {};
 
 function initializeUiComponents(root = document) {
@@ -193,6 +195,10 @@ function inicializarElementosDinamicos(pagina) {
                 btnSave.innerHTML = '<span class="save-icon">✓</span> Salvo!';
                 setTimeout(() => { btnSave.classList.remove('saved'); btnSave.innerHTML = '<span class="save-icon">✓</span> Salvar Rel. Marcha'; }, 2000);
             };
+        }
+
+        if (pagina === 'datalogger') {
+            DynoLogger.attach();
         }
 
         inicializarConfigOBD();
@@ -661,6 +667,7 @@ function updateVisuals(rpm, map, ect) {
     safeSetStyleWidth('log-bar-rpm', `${(rpm / 8000) * 100}%`);
     safeSetStyleWidth('log-bar-map', `${Math.max(0, Math.min(100, ((map + 1) / 4) * 100))}%`);
     safeSetStyleWidth('log-bar-ect', `${(ect / 120) * 100}%`);
+    DynoLogger.sample(rpm);
 }
 
 function syncManualControls(rpm, speed, map, ect, fpress, fpress_avail) {
@@ -808,6 +815,145 @@ function connectWebSocket() {
         socket.close();
     };
 }
+
+const DynoLogger = (() => {
+    const BIN = 50;              // agrupa amostras a cada 50 RPM
+    const RPM_FLOOR = 1800;      // ignora marcha lenta / ruído
+    const RPM_MAX = 8000;
+    const X_MIN = 1000, X_MAX = 7500;   // eixo RPM fixo (visual de dyno)
+
+    let canvas = null, ctx = null, running = false;
+    let last = null;             // { rpm, t }
+    const bins = new Map();      // rpmBin -> { sum, n }  (média de dRPM/dt)
+
+    function attach() {
+        canvas = document.getElementById('dyno-canvas');
+        if (!canvas) return;
+        ctx = canvas.getContext('2d');
+        const btn = document.getElementById('dyno-clear');
+        if (btn) btn.onclick = reset;
+        resize();
+        running = true;
+        draw();
+    }
+
+    function reset() {
+        bins.clear();
+        last = null;
+        setPeaks(null, null);
+        draw();
+    }
+
+    function resize() {
+        if (!canvas || !ctx) return;
+        const dpr = window.devicePixelRatio || 1;
+        const w = canvas.clientWidth || 600;
+        const h = canvas.clientHeight || 280;
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    // Alimentado pelo updateVisuals a cada mensagem do WebSocket
+    function sample(rpm) {
+        // auto-desliga quando a tela sai do DOM (troca de página)
+        if (!canvas || !canvas.isConnected) { running = false; canvas = ctx = null; return; }
+        if (!running || !ctx) return;
+
+        const t = performance.now();
+        if (rpm < RPM_FLOOR || rpm > RPM_MAX) { last = { rpm, t }; return; }
+
+        // Só registra em ACELERAÇÃO (a puxada). Desaceleração é descartada.
+        if (last && rpm > last.rpm) {
+            const dt = (t - last.t) / 1000;
+            if (dt > 0 && dt < 0.4) {
+                const dwdt = (rpm - last.rpm) / dt;      // ∝ torque
+                const bin = Math.round(rpm / BIN) * BIN;
+                const b = bins.get(bin) || { sum: 0, n: 0 };
+                b.sum += dwdt; b.n++;
+                bins.set(bin, b);
+            }
+        }
+        last = { rpm, t };
+        draw();
+    }
+
+    // Suavização 3-pontos sobre a curva final
+    function smooth(arr) {
+        return arr.map((p, i) => {
+            const a = arr[i - 1] || p, c = arr[i + 1] || p;
+            return { rpm: p.rpm, v: (a.v + p.v + c.v) / 3 };
+        });
+    }
+
+    function draw() {
+        if (!ctx || !canvas) return;
+        const W = canvas.clientWidth, H = canvas.clientHeight;
+        const padL = 8, padR = 8, padT = 10, padB = 22;
+        const x = r => padL + ((r - X_MIN) / (X_MAX - X_MIN)) * (W - padL - padR);
+        const y = v => (H - padB) - v * (H - padT - padB);   // v em [0..1]
+
+        ctx.clearRect(0, 0, W, H);
+
+        // Grade + rótulos de RPM
+        ctx.strokeStyle = '#1c2331'; ctx.fillStyle = '#5c6678';
+        ctx.lineWidth = 1; ctx.font = '10px system-ui, sans-serif'; ctx.textAlign = 'center';
+        for (let r = X_MIN; r <= X_MAX; r += 1000) {
+            ctx.beginPath(); ctx.moveTo(x(r), padT); ctx.lineTo(x(r), H - padB); ctx.stroke();
+            ctx.fillText(String(r), x(r), H - 7);
+        }
+
+        // Monta curvas
+        let pts = [...bins.entries()]
+            .map(([rpm, b]) => ({ rpm, tq: b.sum / b.n }))
+            .sort((a, b) => a.rpm - b.rpm);
+
+        if (pts.length < 3) {
+            ctx.fillStyle = '#4a5468'; ctx.font = '13px system-ui, sans-serif';
+            ctx.fillText('Aguardando puxada…', W / 2, H / 2);
+            return;
+        }
+
+        // Potência (rel.) = torque × rpm
+        let tqArr = pts.map(p => ({ rpm: p.rpm, v: p.tq }));
+        let pwArr = pts.map(p => ({ rpm: p.rpm, v: p.tq * p.rpm }));
+        tqArr = smooth(tqArr); pwArr = smooth(pwArr);
+
+        const maxTq = Math.max(...tqArr.map(p => p.v)) || 1;
+        const maxPw = Math.max(...pwArr.map(p => p.v)) || 1;
+        const nTq = tqArr.map(p => ({ rpm: p.rpm, v: p.v / maxTq }));
+        const nPw = pwArr.map(p => ({ rpm: p.rpm, v: p.v / maxPw }));
+
+        const line = (arr, color) => {
+            ctx.strokeStyle = color; ctx.lineWidth = 2.5;
+            ctx.lineJoin = 'round'; ctx.beginPath();
+            arr.forEach((p, i) => i ? ctx.lineTo(x(p.rpm), y(p.v)) : ctx.moveTo(x(p.rpm), y(p.v)));
+            ctx.stroke();
+        };
+        line(nTq, '#3b82ff');   // torque = azul
+        line(nPw, '#ff5a4d');   // potência = vermelho
+
+        // Picos
+        const peakTq = tqArr.reduce((m, p) => p.v > m.v ? p : m, tqArr[0]);
+        const peakPw = pwArr.reduce((m, p) => p.v > m.v ? p : m, pwArr[0]);
+        const dot = (r, color) => {
+            const px = x(r);
+            ctx.strokeStyle = color; ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(px, padT); ctx.lineTo(px, H - padB); ctx.stroke();
+            ctx.setLineDash([]);
+        };
+        dot(peakPw.rpm, 'rgba(255,90,77,0.5)');
+        dot(peakTq.rpm, 'rgba(59,130,255,0.5)');
+        setPeaks(peakTq.rpm, peakPw.rpm);
+    }
+
+    function setPeaks(tqRpm, pwRpm) {
+        safeSetText('dyno-peak-tq', 'Torque pico: ' + (tqRpm ? `~${tqRpm} RPM` : '—'));
+        safeSetText('dyno-peak-pw', 'Potência pico: ' + (pwRpm ? `~${pwRpm} RPM` : '—'));
+    }
+
+    return { attach, sample, reset };
+})();
 
 // Executa assim que a página é aberta
 window.addEventListener('DOMContentLoaded', () => {
