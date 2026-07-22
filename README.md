@@ -20,20 +20,35 @@ O objetivo do projeto é evoluir para uma plataforma completa de telemetria auto
 
 ---
 
+# 🚙 Veículo de referência
+
+O desenvolvimento é validado em um **Ford Ka 2009 1.0 FFV** (ECU IAW-4CFR,
+Magneti Marelli), protocolo **ISO 15765-4 CAN 11 bits / 500 kbaud**.
+
+O projeto não é específico desse veículo: qualquer carro com OBD-II funciona,
+mas os PIDs disponíveis variam conforme a ECU. O app detecta automaticamente
+quais são suportados na conexão.
+
 # ✨ Funcionalidades
 
 Atualmente o projeto possui:
 
-- ✅ Comunicação com adaptadores OBD-II (ELM327)
-- ✅ Leitura de parâmetros do veículo em tempo real
-- ✅ Interface inspirada na FuelTech
-- ✅ Painéis personalizados
+- ✅ Comunicação com adaptadores OBD-II (ELM327 / OBDLink EX)
+- ✅ Detecção automática de protocolo (`ATSPx`) e timing adaptativo (`ATAT1`)
+- ✅ Descoberta dos PIDs suportados pela ECU via bitmap (`0100`/`0120`/`0140`)
+- ✅ Leitura de parâmetros do veículo em tempo real (~25 Hz)
+- ✅ Interface inspirada na FuelTech, com múltiplos painéis
+- ✅ Painel Sport com manômetros SVG e escala responsiva
+- ✅ Suavização visual dos ponteiros e da barra de RPM (interpolação em `requestAnimationFrame`)
 - ✅ Sistema de Mapas
 - ✅ Bancada Manual para simulação dos sensores
 - ✅ Comunicação Bluetooth Low Energy
 - ✅ Controle de fita LED RGB
-- ✅ Shift Light baseado no RPM
-- ✅ Configuração através de arquivo `.env`
+- ✅ Shift Light com loop dedicado (cadência de 10 ms, independente do polling OBD)
+- ✅ Aplicativo único: janela nativa via `pywebview`, sem terminal
+- ✅ Executável Windows (`FuelTechno.exe`) gerado com PyInstaller
+- ✅ Sincronismo de configurações na nuvem (Cloud Firestore, por dispositivo)
+- ✅ Configuração através de arquivo `.env` e da tela de Ajustes
 - ✅ Arquitetura modular
 
 ---
@@ -42,11 +57,12 @@ Atualmente o projeto possui:
 
 O sistema possui diferentes telas para facilitar a utilização.
 
-- Dashboard Principal
+- Dashboard Principal (barra de RPM + status da ECU)
 - Painel Diário
+- Painel Sport (manômetro de RPM + manômetro de temperatura)
 - Seleção de Mapas
-- Configurações
-- Data Logger (em desenvolvimento)
+- Data Logger
+- Configurações (conexão OBD, LED, marchas)
 
 ---
 
@@ -55,21 +71,27 @@ O sistema possui diferentes telas para facilitar a utilização.
 ```text
 FuelTechno/
 │
-├── backend/
-│   ├── bridge.py
-│   ├── led_controller.py
-│   ├── config.py
-│   └── ...
+├── main.py                  # ponto de entrada único (HTTP + bridge + janela)
+├── bridge.py                # WebSocket, ELM327Bridge, loop do shift light
+├── led_controller.py        # BLE da fita LED
+├── firestore_client.py      # sincronismo de configs na nuvem
+├── config.py                # leitura do .env
+├── FuelTechno.spec          # receita do PyInstaller
 │
-├── frontend/
-│   ├── index.html
-│   ├── app.js
-│   ├── style.css
-│   ├── pages/
-│   └── assets/
+├── index.html
+├── app.js
+├── style.css
+├── partials/                # fragmentos reutilizáveis (ecu-frame.html)
+├── pages/                   # telas carregadas dinamicamente
+├── public/                  # assets e páginas do painel Sport
+│
+├── mobile/                  # projeto Capacitor (Android)
+│   ├── src/public/
+│   └── android/
 │
 ├── .env.example
 ├── requirements.txt
+├── BUILD.md
 └── README.md
 ```
 
@@ -121,57 +143,40 @@ pip install -r requirements.txt
 
 ## 4. Configure o arquivo .env
 
-Copie o arquivo de exemplo.
-
-### Windows
-
-```bash
-copy .env.example .env
-```
-
-### Linux
-
-```bash
-cp .env.example .env
-```
-
-Depois configure conforme seu ambiente.
-
-Exemplo:
-
 ```env
+# Conexão OBD-II
 SERIAL_PORT=COM4
 BAUD_RATE=115200
 
-LED_DEVICE_NAME=LEDDM5-000101
+# Fita LED
+LED_DEVICE_NAME=LEDDMX-000101
+LED_REDLINE_RPM=3000
+LED_BLINK_INTERVAL_MS=70
 
-WS_HOST=localhost
+# Servidores locais
+WS_HOST=127.0.0.1
 WS_PORT=8765
+HTTP_PORT=8000
 ```
+
+> `BAUD_RATE=115200` vale para o OBDLink EX em modo VCP. Clones ELM327 Bluetooth
+> normalmente usam 38400.
 
 ---
 
 # ▶️ Executando
 
-Primeiro inicie a Bridge responsável pela comunicação OBD.
+Um único comando sobe o servidor HTTP, o bridge e a janela nativa:
 
 ```bash
-python bridge.py
+python main.py
 ```
 
-Depois abra a interface utilizando um servidor HTTP.
+Depois, dentro do app: **Ajustes → Configurar Conexão → Ligar Conexão**.
 
-Exemplo:
+> O modo antigo (`python bridge.py` + `python -m http.server`) foi descontinuado.
 
-```bash
-python -m http.server
-```
-
-Acesse:
-
-```
-http://localhost:8000
-```
+Para gerar o executável Windows, veja **[BUILD.md](BUILD.md)**.
 
 ---
 
@@ -189,24 +194,26 @@ O projeto utiliza:
 - Bluetooth Low Energy
 - OBD-II
 - ELM327
+- pywebview
+- PyInstaller
+- Cloud Firestore / Firebase Admin SDK
+- ftd2xx (driver D2XX da FTDI)
+- Capacitor (Android)
 
 ---
 
 # 📡 Comunicação
 
 ```text
-          Adaptador OBD-II
-                 │
-                 │
-          Python Bridge
-                 │
-          WebSocket Server
-                 │
-         Frontend (Dashboard)
-                 │
-        Bluetooth Low Energy
-                 │
-            Fita LED RGB
+         Adaptador OBD-II (ELM327)
+                 │  serial
+          bridge.py (asyncio)
+           │             │
+   WebSocket :8765   Loop dedicado do Shift Light
+           │             │
+   Frontend (pywebview)  BLE → Fita LED RGB
+           │
+   Cloud Firestore (configs por dispositivo)
 ```
 
 ---
@@ -235,17 +242,20 @@ Ideal para desenvolvimento da interface.
 
 Planejado para as próximas versões:
 
+- [x] Aplicativo único com janela nativa
+- [x] Executável Windows
+- [x] Sincronismo de configurações na nuvem
+- [x] Painel Sport
 - [ ] Data Logger completo
 - [ ] Exportação CSV
 - [ ] Replay da telemetria
 - [ ] Alertas configuráveis
 - [ ] Dashboard totalmente personalizável
 - [ ] Temas
-- [ ] Sistema de Plugins
 - [ ] Escrita de parâmetros via OBD-II (quando suportado)
 - [ ] HUD
 - [ ] Estatísticas de condução
-- [ ] Aplicativo Mobile
+- [ ] Aplicativo Android (Capacitor) — em andamento
 
 ---
 
