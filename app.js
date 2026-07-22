@@ -209,6 +209,58 @@ function inicializarElementosDinamicos(pagina) {
     }
 }
 
+
+// ==========================================
+// SUAVIZAÇÃO VISUAL (rAF + lerp exponencial)
+// ==========================================
+function renderSmoothed(ch) {
+    if (ch.rpm) {
+        const r = ch.rpm.cur;
+        setNeedleAngle('needle-speed', 52.917, 52.917, -170 + (r / 8000) * 222);
+        const fill = document.getElementById('rpm-svg-fill');
+        if (fill) fill.setAttribute('width', (r / 8000) * 1000);
+        safeSetText('overlay-rpm-val', Math.round(r));
+    }
+    if (ch.ect) {
+        const t = ch.ect.cur;
+        setNeedleAngle('needle-rpm', 25.797, 25.797, -170 + (t / 120) * 210);
+        safeSetText('val-temp-value', Math.round(t));
+    }
+}
+
+const VisualSmoother = (() => {
+    const TAU_MS = 90;   // constante de tempo: menor = mais seco/responsivo
+    const EPS = 0.05;    // limiar de convergência
+    const channels = Object.create(null);
+    let rafId = null, lastT = 0;
+
+    function tick(now) {
+        const dt = Math.min(now - lastT, 100); // clamp p/ aba em background
+        lastT = now;
+        const alpha = 1 - Math.exp(-dt / TAU_MS); // independente de framerate
+        let moving = false;
+        for (const k in channels) {
+            const c = channels[k];
+            const d = c.target - c.cur;
+            if (Math.abs(d) < EPS) { c.cur = c.target; continue; }
+            c.cur += d * alpha;
+            moving = true;
+        }
+        renderSmoothed(channels);
+        rafId = moving ? requestAnimationFrame(tick) : null; // para sozinho quando estabiliza
+    }
+
+    function set(key, value, min, max) {
+        if (typeof value !== 'number' || Number.isNaN(value)) return;
+        const v = Math.min(Math.max(value, min), max);
+        const c = channels[key] || (channels[key] = { cur: v, target: v });
+        c.target = v;
+        if (rafId === null) { lastT = performance.now(); rafId = requestAnimationFrame(tick); }
+    }
+
+    return { set };
+})();
+
 // ==========================================
 // TOGGLE DOS PAINÉIS EXPANSÍVEIS
 // ==========================================
@@ -656,11 +708,10 @@ function renderEcuUI(rpm, speed, map, ect, fpress, fpress_avail, load, battery, 
 // --- Funções auxiliares para manter o código limpo ---
 
 function updateVisuals(rpm, map, ect) {
-    safeSetText('overlay-rpm-val', rpm);
-    const svgFill = document.getElementById('rpm-svg-fill');
-    if (svgFill) svgFill.setAttribute('width', Math.min(1, Math.max(0, rpm / 8000)) * 1000);
+    VisualSmoother.set('rpm', rpm, 0, 8000);
+    VisualSmoother.set('ect', ect, 0, 120);
 
-    const isOverLimit = rpm >= currentRedlineRpm; // ANTES: rpm >= SCREEN_ALERT_RPM
+    const isOverLimit = rpm >= currentRedlineRpm;   // valor REAL, sem lag
     const screenEl = document.getElementById('ecu-screen');
     if (screenEl) screenEl.classList.toggle('screen-alert-active', isOverLimit);
 
@@ -714,7 +765,7 @@ function setNeedleAngle(id, pivotX, pivotY, angleDeg) {
 
 function updateGaugeVisuals(rpm, ect, turbo, ledColor) {
     // Manômetro grande (RPM): pivô 52.917, -170°..52°
-    const rpmClamped = Math.min(Math.max(rpm, 0), 8000);
+   /*const rpmClamped = Math.min(Math.max(rpm, 0), 8000);
     const rpmAngle = -170 + (rpmClamped / 8000) * (52 - -170);
     setNeedleAngle('needle-speed', 52.917, 52.917, rpmAngle);
 
@@ -724,7 +775,7 @@ function updateGaugeVisuals(rpm, ect, turbo, ledColor) {
     setNeedleAngle('needle-rpm', 25.797, 25.797, ectAngle);
 
     const elTemp = document.getElementById('val-temp-value');
-    if (elTemp) elTemp.innerText = Math.round(ect);
+    if (elTemp) elTemp.innerText = Math.round(ect);*/
 
     // Triângulo de shift-light: ligado ao RPM (redline)
     const triangle = document.getElementById('shift-light-triangle');
