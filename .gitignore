@@ -6,3 +6,4 @@ __pycache__/
 device_configs/
 serviceAccountKey.json
 webview_data/
+firebase-config.js
