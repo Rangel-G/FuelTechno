@@ -12,7 +12,7 @@ ENV/
 Thumbs.db
 
 # Configurações & Segredos
-.env*
+.env
 firebase-config.js
 device_configs/
 webview_data/
