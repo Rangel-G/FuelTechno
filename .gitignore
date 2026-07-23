@@ -1,8 +1,18 @@
+# Ambientes Virtuais
 .venv/
-__pycache__/
-*.pyc
+venv/
+ENV/
+
+# Python Cache
+**/__pycache__/
+*.py[cod]
+
+# Arquivos de Sistema
 .DS_Store
-.env
+Thumbs.db
+
+# Configurações & Segredos
+.env*
+firebase-config.js
 device_configs/
 webview_data/
-.firebase-config.js
