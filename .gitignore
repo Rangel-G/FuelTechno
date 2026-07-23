@@ -4,6 +4,5 @@ __pycache__/
 .DS_Store
 .env
 device_configs/
-serviceAccountKey.json
 webview_data/
-firebase-config.js
+.firebase-config.js
