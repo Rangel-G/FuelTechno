@@ -187,7 +187,6 @@ Um único comando sobe o servidor HTTP local, o bridge (WebSocket + OBD-II + LED
 
 ```bash
 python main.py
-python main.py
 ```
 
 Depois, dentro do app: **Ajustes → Configurar Conexão → Ligar Conexão**.
@@ -214,7 +213,6 @@ O projeto utiliza:
 - PyInstaller
 - Cloud Firestore (client SDK + autenticação anônima)
 - Capacitor (Android, em andamento)
-
 ---
 
 # 📡 Comunicação
@@ -280,7 +278,6 @@ Planejado para as próximas versões:
 - [ ] Escrita de parâmetros via OBD-II (quando suportado)
 - [ ] HUD
 - [ ] Estatísticas de condução
-- [ ] Aplicativo Android (Capacitor) — em andamento
 - [ ] Aplicativo Android (Capacitor) — em andamento
 
 ---
