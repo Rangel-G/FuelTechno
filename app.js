@@ -78,6 +78,32 @@ function generateUUID() {
     return `${h.slice(0, 4).join('')}-${h.slice(4, 6).join('')}-${h.slice(6, 8).join('')}-${h.slice(8, 10).join('')}-${h.slice(10, 16).join('')}`;
 }
 
+
+
+let _pendingFtdiSerial = null;
+
+function refreshFtdiList() {
+    sendLedCommand({ cmd: 'list_ftdi_devices' });
+}
+
+function preencherListaFtdi(devices) {
+    const select = document.getElementById('cfg-obd-ftdi-device');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">-- Nenhum adaptador encontrado --</option>';
+    (devices || []).forEach(dev => {
+        const opt = document.createElement('option');
+        opt.value = dev.serial_number;
+        opt.textContent = `${dev.description || 'FTDI'} (S/N ${dev.serial_number})`;
+        select.appendChild(opt);
+    });
+
+    // Restaura a seleção salva, só se o adaptador ainda estiver conectado
+    if (_pendingFtdiSerial && [...select.options].some(o => o.value === _pendingFtdiSerial)) {
+        select.value = _pendingFtdiSerial;
+    }
+}
+
 const deviceId = localStorage.getItem('ft_device_id') || (() => {
     const id = generateUUID();
     localStorage.setItem('ft_device_id', id);
@@ -167,6 +193,10 @@ function inicializarElementosDinamicos(pagina) {
     }
 
     // 3. Lógica da tela de Ajustes (controles de configuração)
+    if (pagina === 'datalogger') {
+        DynoLogger.attach();
+    }
+
     if (pagina === 'ajustes') {
 
 
@@ -189,16 +219,13 @@ function inicializarElementosDinamicos(pagina) {
                 gearConfig = { ratios, diff: parseFloat(diffInput.value) || gearConfig.diff, perimeter: parseFloat(perimInput.value) || gearConfig.perimeter };
                 cgearConfig = { ratios, diff: parseFloat(diffInput.value) || gearConfig.diff, perimeter: parseFloat(perimInput.value) || gearConfig.perimeter };
                 localStorage.setItem('ft_config_gear', JSON.stringify(gearConfig));
+                CloudSync.push('gear_config', gearConfig);
                 sendLedCommand({ cmd: 'update_config', section: 'gear', device_id: deviceId, ...gearConfig });
                 if (badge) badge.innerText = `${ratios.length} marchas`;
                 btnSave.classList.add('saved');
                 btnSave.innerHTML = '<span class="save-icon">✓</span> Salvo!';
                 setTimeout(() => { btnSave.classList.remove('saved'); btnSave.innerHTML = '<span class="save-icon">✓</span> Salvar Rel. Marcha'; }, 2000);
             };
-        }
-
-        if (pagina === 'datalogger') {
-            DynoLogger.attach();
         }
 
         inicializarConfigOBD();
@@ -208,6 +235,131 @@ function inicializarElementosDinamicos(pagina) {
         inicializarConfigGear();
     }
 }
+
+// ==========================================
+// SINCRONISMO NA NUVEM (Firebase Auth anônima + Firestore)
+// ==========================================
+const CloudSync = (() => {
+    const SECTION_MAP = { obd: 'obd_config', led: 'led_config', gear: 'gear_config' };
+    let db = null;
+    let uid = null;
+    let ready = false; // true assim que uid + persistência offline estiverem prontos
+
+    function init() {
+        if (typeof firebase === 'undefined' || !window.FT_FIREBASE_CONFIG) {
+            console.warn('[CloudSync] SDK ou config ausentes — sincronismo desativado.');
+            return Promise.resolve(false);
+        }
+
+        firebase.initializeApp(window.FT_FIREBASE_CONFIG);
+        db = firebase.firestore();
+
+        // Persistência offline: cache local do Firestore em IndexedDB.
+        // Essencial rodando dentro do carro — sem isso, sem 4G o app
+        // não le nem escreve config nenhuma.
+        return db.enablePersistence({ synchronizeTabs: true })
+            .catch(err => {
+                // 'failed-precondition' = outra aba já abriu com persistência;
+                // 'unimplemented' = navegador sem suporte (ex: WebView antigo).
+                // Em ambos os casos seguimos sem cache local, só sem offline.
+                console.warn('[CloudSync] Persistencia offline indisponivel:', err.code);
+            })
+            .then(() => authenticate());
+    }
+
+    function authenticate() {
+        return new Promise((resolve) => {
+            firebase.auth().onAuthStateChanged(async (user) => {
+                if (user) {
+                    uid = user.uid;
+                    ready = true;
+                    await migrateFromLocalStorageIfNeeded();
+                    resolve(true);
+                } else {
+                    firebase.auth().signInAnonymously().catch(err => {
+                        console.warn('[CloudSync] Falha na autenticacao anonima:', err);
+                        resolve(false);
+                    });
+                }
+            });
+        });
+    }
+
+    function isReady() {
+        return ready && uid !== null;
+    }
+
+    function getUid() {
+        return uid;
+    }
+
+    const SECTION_KEYS = {
+        led_config: 'ft_config_led',
+        gear_config: 'ft_config_gear',
+    };
+    const BOOTSTRAP_FLAG = 'ft_cloud_bootstrapped';
+
+    function _docRef(section) {
+        return db.collection('users').doc(uid).collection('configs').doc(section);
+    }
+
+    function _readObdLocal() {
+        const byType = JSON.parse(localStorage.getItem('ft_config_obd_by_type') || '{}');
+        const lastType = localStorage.getItem('ft_config_obd_last_type') || '';
+        return { by_type: byType, last_type: lastType };
+    }
+
+    function _writeObdLocal(data) {
+        if (!data) return;
+        if (data.by_type) localStorage.setItem('ft_config_obd_by_type', JSON.stringify(data.by_type));
+        if (data.last_type) localStorage.setItem('ft_config_obd_last_type', data.last_type);
+    }
+
+    async function push(section, data) {
+        if (!isReady()) return;
+        try {
+            await _docRef(section).set(data, { merge: true });
+        } catch (err) {
+            console.warn(`[CloudSync] Falha ao gravar ${section}:`, err);
+        }
+    }
+
+    async function pullAll() {
+        for (const section of ['obd_config', 'led_config', 'gear_config']) {
+            try {
+                const snap = await _docRef(section).get();
+                if (!snap.exists) continue;
+                const data = snap.data();
+                if (section === 'obd_config') _writeObdLocal(data);
+                else localStorage.setItem(SECTION_KEYS[section], JSON.stringify(data));
+            } catch (err) {
+                console.warn(`[CloudSync] Falha ao ler ${section}:`, err);
+            }
+        }
+    }
+
+    async function migrateFromLocalStorageIfNeeded() {
+        if (localStorage.getItem(BOOTSTRAP_FLAG) === uid) {
+            // Já migrado nesta conta anônima — apenas puxa o que houver de mais recente.
+            await pullAll();
+            return;
+        }
+
+        const ledLocal = JSON.parse(localStorage.getItem('ft_config_led') || 'null');
+        const gearLocal = JSON.parse(localStorage.getItem('ft_config_gear') || 'null');
+        const obdLocal = _readObdLocal();
+
+        if (ledLocal) await push('led_config', ledLocal);
+        if (gearLocal) await push('gear_config', gearLocal);
+        if (obdLocal.by_type && Object.keys(obdLocal.by_type).length) await push('obd_config', obdLocal);
+
+        // Marca por uid: se a auth anônima expirar e vier um uid novo,
+        // migra de novo em vez de assumir silenciosamente que já foi feito.
+        localStorage.setItem(BOOTSTRAP_FLAG, uid);
+    }
+
+    return { init, isReady, getUid, push, pullAll, SECTION_MAP };
+})();
 
 
 // ==========================================
@@ -291,6 +443,7 @@ function toggleConfigPanel(panelId) {
 const OBD_TYPE_HINTS = {
     'bluetooth': { label: 'Porta COM (Bluetooth)', placeholder: 'COM4', baudVisible: true },
     'usb': { label: 'Porta COM (USB)', placeholder: 'COM7', baudVisible: true },
+    'ftdi-d2xx': { label: 'Adaptador FTDI (D2XX)', placeholder: '', baudVisible: true },
 };
 
 function inicializarConfigOBD() {
@@ -301,6 +454,8 @@ function inicializarConfigOBD() {
     const protoSelect = document.getElementById('cfg-obd-proto');
     const btnSave = document.getElementById('btn-save-obd');
     const badge = document.getElementById('obd-status-badge');
+    const btnRefreshFtdi = document.getElementById('btn-refresh-ftdi');
+    if (btnRefreshFtdi) btnRefreshFtdi.onclick = refreshFtdiList;
 
     if (!typeSelect || !addrInput || !btnSave) return;
 
@@ -321,15 +476,27 @@ function inicializarConfigOBD() {
         addrInput.value = saved.serial_port || '';
         if (baudSelect) baudSelect.value = saved.baud_rate !== undefined ? String(saved.baud_rate) : baudSelect.value;
         if (protoSelect) protoSelect.value = saved.protocol !== undefined ? saved.protocol : protoSelect.value;
-        if (badge) badge.innerText = saved.serial_port || type.toUpperCase();
+        if (badge) badge.innerText = saved.serial_port || saved.ftdi_serial || type.toUpperCase();
+        _pendingFtdiSerial = saved.ftdi_serial || null;
     }
 
     function updatePlaceholder() {
         const hints = OBD_TYPE_HINTS[typeSelect.value] || OBD_TYPE_HINTS['bluetooth'];
+        const isFtdi = typeSelect.value === 'ftdi-d2xx';
+
         addrInput.placeholder = hints.placeholder;
         if (addrLabel) addrLabel.innerText = hints.label;
         const baudField = baudSelect?.closest('.config-field');
         if (baudField) baudField.style.display = hints.baudVisible ? '' : 'none';
+
+        // Porta serial manual não se aplica ao modo FTDI D2XX
+        const addrField = addrInput.closest('.config-field');
+        if (addrField) addrField.style.display = isFtdi ? 'none' : '';
+
+        const ftdiWrapper = document.getElementById('cfg-obd-ftdi-wrapper');
+        if (ftdiWrapper) ftdiWrapper.style.display = isFtdi ? '' : 'none';
+
+        if (isFtdi) refreshFtdiList();
     }
 
     // Restaura o último tipo usado ou preserva a seleção do HTML quando não há config salva
@@ -346,17 +513,26 @@ function inicializarConfigOBD() {
 
     btnSave.onclick = () => {
         const type = typeSelect.value;
+        const isFtdi = type === 'ftdi-d2xx';
+        const ftdiSelect = document.getElementById('cfg-obd-ftdi-device');
+
+        if (isFtdi && !ftdiSelect?.value) {
+            if (badge) badge.innerText = 'SELECIONE UM ADAPTADOR';
+            return; // não salva config incompleta silenciosamente
+        }
         const config = {
             connection_type: type,
-            serial_port: addrInput.value || addrInput.placeholder,
+            serial_port: isFtdi ? '' : (addrInput.value || addrInput.placeholder),
             baud_rate: baudSelect ? parseInt(baudSelect.value) : 115200,
             protocol: protoSelect ? protoSelect.value : 'auto',
+            ftdi_serial: isFtdi ? ftdiSelect.value : '',
         };
         allSaved[type] = config;
         localStorage.setItem('ft_config_obd_by_type', JSON.stringify(allSaved));
         localStorage.setItem('ft_config_obd_last_type', type);
+        CloudSync.push('obd_config', { by_type: allSaved, last_type: type });
 
-        if (badge) badge.innerText = config.serial_port;
+        if (badge) badge.innerText = config.serial_port || config.ftdi_serial;
         sendLedCommand({ cmd: 'update_config', section: 'obd', device_id: deviceId, ...config });
 
         btnSave.classList.add('saved');
@@ -482,6 +658,7 @@ function inicializarConfigLED() {
         currentRedlineRpm = config.redline_rpm;
         safeSetText('gauge-max-rpm', currentRedlineRpm);
         localStorage.setItem('ft_config_led', JSON.stringify(config));
+        CloudSync.push('led_config', config);
 
         // Atualiza badge
         if (badge) badge.innerText = config.device_name.substring(0, 10);
@@ -765,17 +942,17 @@ function setNeedleAngle(id, pivotX, pivotY, angleDeg) {
 
 function updateGaugeVisuals(rpm, ect, turbo, ledColor) {
     // Manômetro grande (RPM): pivô 52.917, -170°..52°
-   /*const rpmClamped = Math.min(Math.max(rpm, 0), 8000);
-    const rpmAngle = -170 + (rpmClamped / 8000) * (52 - -170);
-    setNeedleAngle('needle-speed', 52.917, 52.917, rpmAngle);
-
-    // Accel pequeno (temperatura): pivô 25.797, -170°..40°
-    const ectClamped = Math.min(Math.max(ect, 0), 120);
-    const ectAngle = -170 + (ectClamped / 120) * (40 - -170);
-    setNeedleAngle('needle-rpm', 25.797, 25.797, ectAngle);
-
-    const elTemp = document.getElementById('val-temp-value');
-    if (elTemp) elTemp.innerText = Math.round(ect);*/
+    /*const rpmClamped = Math.min(Math.max(rpm, 0), 8000);
+     const rpmAngle = -170 + (rpmClamped / 8000) * (52 - -170);
+     setNeedleAngle('needle-speed', 52.917, 52.917, rpmAngle);
+ 
+     // Accel pequeno (temperatura): pivô 25.797, -170°..40°
+     const ectClamped = Math.min(Math.max(ect, 0), 120);
+     const ectAngle = -170 + (ectClamped / 120) * (40 - -170);
+     setNeedleAngle('needle-rpm', 25.797, 25.797, ectAngle);
+ 
+     const elTemp = document.getElementById('val-temp-value');
+     if (elTemp) elTemp.innerText = Math.round(ect);*/
 
     // Triângulo de shift-light: ligado ao RPM (redline)
     const triangle = document.getElementById('shift-light-triangle');
@@ -1010,7 +1187,8 @@ const DynoLogger = (() => {
 window.addEventListener('DOMContentLoaded', () => {
     updateTopMapLabel();
     toggleInputsState();
-    carregarPagina('painel'); // Carrega a primeira tela
+    carregarPagina('painel');
     connectWebSocket();
+    CloudSync.init(); // NOVO
     setInterval(runManualLoop, 30);
 });

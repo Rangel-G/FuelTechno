@@ -28,6 +28,7 @@
                 <select id="cfg-obd-type" class="config-select">
                     <option value="bluetooth">Bluetooth ELM327 (Porta COM)</option>
                     <option value="usb">USB Direto (Porta COM)</option>
+                    <option value="ftdi-d2xx">FTDI D2XX (Driver direto, sem porta COM)</option>
                 </select>
             </div>
             <div class="config-field">
@@ -40,8 +41,9 @@
                     <select id="cfg-obd-ftdi-device" class="config-select" style="flex:1;">
                         <option value="">-- Nenhum adaptador encontrado --</option>
                     </select>
-                    <button type="button" id="btn-refresh-ftdi" class="led-btn" style="flex:0 0 auto;">🔄
-                        Buscar</button>
+                    <button type="button" id="btn-refresh-ftdi" class="led-btn" style="flex:0 0 auto;">
+                        🔄 Buscar
+                    </button>
                 </div>
             </div>
             <div class="config-field">

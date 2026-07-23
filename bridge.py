@@ -5,7 +5,6 @@ import os
 import serial
 import time
 import sys  # adicionar ao bloco de imports
-import firestore_client
 
 from serial.tools import list_ports
 from led_controller import LedController
@@ -612,15 +611,7 @@ async def command_listener(websocket, bridge, bridge_ready_holder):
                             "ftdi_serial": ftdi_serial,
                         },
                     )
-                    firestore_client.save_config_async(
-                        device_id,
-                        "obd_config",
-                        {
-                            "connection_type": conn_type,
-                            "baud_rate": int(baud_rate),
-                            "protocol": protocol,
-                        },
-                    )
+                    
                     await websocket.send(
                         json.dumps(
                             {"cmd": "config_saved", "section": "obd", "ok": True}
@@ -675,16 +666,7 @@ async def command_listener(websocket, bridge, bridge_ready_holder):
                             "color_redline": list(color_redline),
                         },
                     )
-                    firestore_client.save_config_async(
-                        device_id,
-                        "led_config",
-                        {
-                            "redline_rpm": int(redline_rpm),
-                            "blink_interval_ms": int(blink_ms),
-                            "color_normal": list(color_normal),
-                            "color_redline": list(color_redline),
-                        },
-                    )
+                  
                 logging.info(
                     f"[CONFIG] LED atualizado: nome={device_name}, redline={redline_rpm}, blink={blink_ms}ms"
                 )
@@ -700,15 +682,7 @@ async def command_listener(websocket, bridge, bridge_ready_holder):
                             "perimeter": data.get("perimeter"),
                         },
                     )
-                    firestore_client.save_config_async(
-                        device_id,
-                        "gear_config",
-                        {
-                            "ratios": data.get("ratios"),
-                            "diff": data.get("diff"),
-                            "perimeter": data.get("perimeter"),
-                        },
-                    )
+                   
                     await websocket.send(
                         json.dumps(
                             {"cmd": "config_saved", "section": "gear", "ok": True}
